@@ -1,0 +1,1696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Koora Jo — Book pitches, courts and drop-in games across Amman</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<style>
+:root{
+  --paper:#F4F4F1;
+  --card:#FFFFFF;
+  --ink:#0B0E0C;
+  --ink-soft:#1C221E;
+  --muted:#5D655F;
+  --faint:#8E958F;
+  --line:#E4E5E0;
+  --line-2:#D2D4CE;
+  --green:#0A7C42;
+  --green-tint:#E9F2EC;
+  --red:#CE1126;
+  --red-tint:#FBEAEC;
+  --peak:#B27508;
+  --peak-tint:#FBF2E0;
+  --fb:#0A7C42;
+  --pd:#2B4FD6;
+  --bb:#DC5A12;
+  --disp:"Syne",system-ui,sans-serif;
+  --body:"Outfit",system-ui,-apple-system,sans-serif;
+  --mono:"Space Mono",ui-monospace,monospace;
+  --ar:"IBM Plex Sans Arabic",sans-serif;
+  --sh-1:0 1px 2px rgba(11,14,12,.05);
+  --sh-2:0 4px 14px -6px rgba(11,14,12,.14);
+  --sh-3:0 24px 60px -28px rgba(11,14,12,.4);
+  --pad:clamp(18px,4vw,44px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--body);font-size:15.5px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;padding:0}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-radius:4px}
+.wrap{max-width:1340px;margin:0 auto;padding:0 var(--pad)}
+h1,h2,h3,h4{margin:0;font-family:var(--disp);font-weight:800;letter-spacing:-.03em;line-height:1.08}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint)}
+
+/* header */
+.hdr{position:sticky;top:0;z-index:70;background:rgba(244,244,241,.82);backdrop-filter:blur(16px) saturate(1.4);border-bottom:1px solid var(--line)}
+.hdr-in{display:flex;align-items:center;gap:14px;height:64px}
+.logo{display:flex;align-items:center;gap:11px;flex-shrink:0}
+.logo .mark{width:32px;height:32px;border-radius:9px;background:var(--ink);display:grid;place-items:center}
+.logo .name{font-family:var(--disp);font-weight:800;font-size:17.5px;letter-spacing:-.045em}
+.logo .name i{font-style:normal;color:var(--green)}
+.logo .ar{font-family:var(--ar);font-size:14px;color:var(--faint);border-left:1px solid var(--line-2);padding-left:11px;margin-left:2px}
+.hnav{display:flex;gap:4px;margin-left:22px}
+.hnav button{padding:8px 13px;border-radius:8px;font-size:14px;font-weight:500;color:var(--muted);transition:.16s;white-space:nowrap}
+.hnav button:hover{background:rgba(11,14,12,.05);color:var(--ink)}
+.hnav button[aria-selected="true"]{color:var(--ink);font-weight:600;background:rgba(11,14,12,.06)}
+.hnav .cnt{display:inline-block;min-width:18px;height:18px;line-height:18px;padding:0 5px;margin-left:7px;border-radius:99px;background:var(--ink);color:#fff;font-family:var(--mono);font-size:10.5px;text-align:center}
+.hdr-r{margin-left:auto;display:flex;align-items:center;gap:9px}
+.loc{display:flex;align-items:center;gap:8px;padding:7px 12px;border:1px solid var(--line-2);border-radius:99px;background:var(--card);font-size:13px;color:var(--muted);transition:.16s}
+.loc:hover{border-color:var(--ink);color:var(--ink)}
+.loc b{font-weight:600;color:var(--ink)}
+.gps{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(10,124,66,.16)}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-family:var(--disp);font-weight:700;font-size:13px;flex-shrink:0}
+
+/* hero */
+.hero{background:var(--ink);color:#fff;border-radius:0 0 26px 26px;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(760px 380px at 88% -10%,rgba(10,124,66,.42),transparent 62%),
+             radial-gradient(520px 300px at 8% 108%,rgba(206,17,38,.16),transparent 66%)}
+.hero-in{position:relative;z-index:2;padding:52px 0 64px;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:56px;align-items:end}
+.ticker{display:flex;align-items:center;gap:10px;margin-bottom:22px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.62)}
+.hero h1{font-size:clamp(42px,6.4vw,82px);letter-spacing:-.045em;color:#fff}
+.hero h1 span{display:block}
+.hero h1 .g{color:#4ADE80}
+.hero-sub{margin:22px 0 0;color:rgba(255,255,255,.66);font-size:16.5px;max-width:44ch}
+.metrics{display:flex;gap:0;border-top:1px solid rgba(255,255,255,.14);padding-top:22px;padding-bottom:8px}
+.metric{flex:1;padding-right:18px;min-width:0}
+.metric b{display:block;font-family:var(--disp);font-weight:800;font-size:clamp(28px,3.4vw,42px);letter-spacing:-.035em;line-height:1}
+.metric b.r{color:#FF6B7D}
+.metric span{display:block;font-size:12px;color:rgba(255,255,255,.55);margin-top:7px;line-height:1.35;padding-bottom:2px}
+
+/* search bar */
+.searchbar{
+  position:relative;z-index:3;margin:18px auto 0;background:var(--card);border:1px solid var(--line);
+  border-radius:16px;box-shadow:var(--sh-3);display:grid;grid-template-columns:1.1fr 1fr 1fr auto;align-items:stretch;overflow:hidden;
+}
+.sfield{padding:13px 18px;border-right:1px solid var(--line);text-align:left;transition:.16s;min-width:0}
+.sfield:hover{background:#FAFAF8}
+.sfield span{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-bottom:3px}
+.sfield b{display:block;font-size:14.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sfield select{width:100%;border:none;background:none;font:600 14.5px var(--body);color:var(--ink);padding:0;cursor:pointer;appearance:none}
+.sgo{margin:8px;padding:0 26px;border-radius:11px;background:var(--ink);color:#fff;font-weight:600;font-size:14.5px;display:flex;align-items:center;gap:9px;transition:.16s}
+.sgo:hover{background:#252C27}
+
+/* filter rail */
+.rail{position:sticky;top:64px;z-index:60;background:rgba(244,244,241,.9);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);margin-top:34px}
+.rail-in{display:flex;align-items:center;gap:9px;padding:13px 0;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border:1px solid var(--line-2);border-radius:99px;background:var(--card);font-size:13.5px;font-weight:500;color:var(--muted);transition:.16s;white-space:nowrap}
+.chip:hover{border-color:var(--ink);color:var(--ink)}
+.chip i{width:8px;height:8px;border-radius:2.5px;flex-shrink:0}
+.chip .n{font-family:var(--mono);font-size:11px;color:var(--faint)}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.chip[aria-pressed="true"] .n{color:rgba(255,255,255,.6)}
+.rail .sep{width:1px;height:22px;background:var(--line-2);margin:0 4px}
+.rail .right{margin-left:auto;display:flex;align-items:center;gap:9px}
+.selwrap{display:flex;align-items:center;gap:7px;border:1px solid var(--line-2);border-radius:99px;background:var(--card);padding:7px 13px;font-size:13px;color:var(--muted)}
+.selwrap select{border:none;background:none;font:600 13px var(--body);color:var(--ink);cursor:pointer;appearance:none;padding-right:2px}
+.count{font-size:13px;color:var(--muted)}
+.count b{color:var(--ink);font-weight:600}
+
+/* explore grid */
+.explore{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:26px;align-items:start;padding:26px 0 80px}
+.vlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+
+/* venue card */
+.vcard{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;transition:transform .2s cubic-bezier(.2,.8,.3,1),box-shadow .2s,border-color .2s;display:flex;flex-direction:column;text-align:left}
+.vcard:hover{transform:translateY(-3px);box-shadow:var(--sh-2);border-color:var(--line-2)}
+.vcard.active{border-color:var(--ink);box-shadow:var(--sh-2)}
+.vtop{position:relative;padding:16px 16px 0}
+.court{display:block;width:100%;height:auto;border-radius:10px}
+.vbadge{position:absolute;top:24px;left:24px;display:flex;gap:6px;flex-wrap:wrap}
+.bdg{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding:4px 8px;border-radius:6px;background:rgba(255,255,255,.94);color:var(--ink);font-weight:500;box-shadow:var(--sh-1)}
+.bdg.mark{background:var(--ink);color:#fff}
+.vbody{padding:14px 16px 16px;display:flex;flex-direction:column;gap:11px;flex:1}
+.vhead{display:flex;gap:12px;align-items:flex-start}
+.vcard h3{font-size:17px;letter-spacing:-.03em}
+.vmeta{font-size:12.5px;color:var(--muted);margin-top:3px;display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.vmeta .dot{width:3px;height:3px;border-radius:50%;background:var(--line-2)}
+.vprice{margin-left:auto;text-align:right;flex-shrink:0}
+.vprice b{font-family:var(--disp);font-weight:800;font-size:19px;letter-spacing:-.03em;display:block}
+.vprice span{font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.06em}
+
+/* availability rail */
+.avail{border-top:1px solid var(--line);padding-top:11px;margin-top:auto}
+.avail-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+.avail-h span{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+.avail-h b{font-size:11.5px;font-weight:600;color:var(--green)}
+.avail-h b.none{color:var(--faint)}
+.bars{display:flex;gap:2px;height:26px;align-items:flex-end}
+.bar{flex:1;border-radius:2px;background:var(--line);transition:.14s;min-width:0;position:relative}
+.bar.free{background:var(--green);height:100%}
+.bar.peak{background:var(--peak);height:100%}
+.bar.taken{background:var(--line);height:62%}
+.bar.past{background:var(--line);height:40%;opacity:.55}
+.bar.free:hover,.bar.peak:hover{filter:brightness(1.22);transform:scaleX(1.5)}
+.ticks{display:flex;justify-content:space-between;margin-top:5px;font-family:var(--mono);font-size:9.5px;color:var(--faint)}
+.vfoot{display:flex;align-items:center;gap:10px;padding-top:2px}
+.btn{padding:10px 18px;border-radius:10px;background:var(--ink);color:#fff;font-weight:600;font-size:14px;transition:.16s;white-space:nowrap;text-align:center}
+.btn:hover{background:#262E29}
+.btn:disabled{background:var(--line);color:var(--faint);cursor:not-allowed}
+.btn.sm{padding:8px 14px;font-size:13px;border-radius:9px}
+.btn.out{background:none;border:1px solid var(--line-2);color:var(--ink)}
+.btn.out:hover{background:#F0F0ED;border-color:var(--ink)}
+.btn.dngr{background:none;border:1px solid var(--line-2);color:var(--red)}
+.btn.dngr:hover{background:var(--red-tint);border-color:var(--red)}
+.btn.full{width:100%}
+.btn.green{background:var(--green)}
+.btn.green:hover{background:#09693a}
+.vfoot .btn{margin-left:auto}
+
+/* map */
+.mapwrap{position:sticky;top:126px;border-radius:18px;overflow:hidden;background:var(--ink);border:1px solid var(--ink);box-shadow:var(--sh-2)}
+.map-h{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.1)}
+.map-h h4{color:#fff;font-size:13.5px;letter-spacing:-.01em}
+.map-h .lg{margin-left:auto;display:flex;gap:11px;font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.5)}
+.map-h .lg i{display:inline-block;width:7px;height:7px;border-radius:2px;margin-right:5px}
+#mapLeaflet{height:480px;z-index:1;background:#1a1a2e}
+.map-f{padding:12px 16px;border-top:1px solid rgba(255,255,255,.1);font-size:12.5px;color:rgba(255,255,255,.62);display:flex;align-items:center;gap:8px}
+.map-f b{color:#fff;font-weight:600}
+.leaflet-popup-content-wrapper{border-radius:12px;font-family:var(--body);font-size:13px}
+.leaflet-popup-content{margin:10px 14px}
+.leaflet-popup-content b{font-family:var(--disp);font-weight:700}
+.leaflet-popup-tip-container{display:none}
+.leaflet-control-zoom a{background:var(--ink)!important;color:#fff!important;border-color:rgba(255,255,255,.15)!important}
+
+/* games */
+.pagehead{padding:44px 0 8px;max-width:640px}
+.pagehead h2{font-size:clamp(30px,4.4vw,46px);letter-spacing:-.04em;margin-top:14px}
+.pagehead p{color:var(--muted);margin:14px 0 0;font-size:16px}
+.gwrap{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:16px;padding:24px 0 80px}
+.gcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:14px;transition:.2s}
+.gcard:hover{box-shadow:var(--sh-2);border-color:var(--line-2)}
+.gtop{display:flex;gap:12px;align-items:flex-start}
+.sport-i{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;flex-shrink:0}
+.gcard h3{font-size:16.5px;letter-spacing:-.03em}
+.gcard .sub{font-size:12.5px;color:var(--muted);margin-top:3px}
+.lvl{margin-left:auto;font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 9px;border-radius:7px;border:1px solid var(--line-2);color:var(--muted);flex-shrink:0}
+.lvl.hot{background:var(--red-tint);border-color:transparent;color:var(--red);font-weight:600}
+.gwhen{display:flex;align-items:center;gap:12px;padding:11px 13px;background:#F7F7F5;border-radius:11px;font-family:var(--mono);font-size:13px}
+.gwhen b{font-weight:600}
+.gwhen em{font-style:normal;color:var(--faint);font-size:11.5px;margin-left:auto}
+.roster{display:flex;align-items:center;gap:10px}
+.faces{display:flex}
+.face{width:27px;height:27px;border-radius:50%;border:2px solid var(--card);margin-left:-8px;display:grid;place-items:center;font-family:var(--disp);font-weight:700;font-size:10.5px;color:#fff;background:var(--ink)}
+.face:first-child{margin-left:0}
+.face.open{background:#EDEEEA;color:var(--faint);border-style:dashed;border-color:var(--line-2)}
+.face.me{background:var(--green)}
+.rmeta{font-size:12.5px;color:var(--muted)}
+.rmeta b{color:var(--ink);font-weight:600}
+.prog{height:4px;border-radius:99px;background:var(--line);overflow:hidden}
+.prog i{display:block;height:100%;border-radius:99px;background:var(--ink);transition:width .5s cubic-bezier(.2,.8,.3,1)}
+.gnote{font-size:13px;color:var(--muted);line-height:1.5}
+.gfoot{display:flex;align-items:center;gap:12px;margin-top:auto;padding-top:4px;border-top:1px solid var(--line)}
+.gfoot .pp{padding-top:12px}
+.gfoot .pp b{font-family:var(--disp);font-weight:800;font-size:19px;letter-spacing:-.03em;display:block}
+.gfoot .pp span{font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.06em}
+.gfoot .btn{margin-left:auto;margin-top:12px}
+
+/* passes */
+.passes{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:18px;padding:24px 0 80px}
+.pass{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:grid;grid-template-columns:1fr 118px;position:relative;box-shadow:var(--sh-1)}
+.pass.off{opacity:.55}
+.pass .strip{position:absolute;left:0;top:0;bottom:0;width:4px}
+.pass-m{padding:18px 20px 18px 22px}
+.pstat{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;padding:4px 8px;border-radius:6px;background:var(--green-tint);color:var(--green);font-weight:500}
+.pstat.x{background:var(--red-tint);color:var(--red)}
+.pass h3{font-size:19px;margin:11px 0 3px;letter-spacing:-.032em}
+.pwhere{font-size:12.5px;color:var(--muted)}
+.prow{display:flex;gap:26px;margin-top:15px;flex-wrap:wrap}
+.prow div span{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:3px}
+.prow div b{font-family:var(--disp);font-weight:700;font-size:15.5px;letter-spacing:-.02em}
+.pacts{display:flex;gap:8px;margin-top:17px;flex-wrap:wrap}
+.pstub{background:#F7F7F5;border-left:2px dashed var(--line-2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px 10px;text-align:center}
+.qr{width:58px;height:58px;padding:5px;background:var(--ink);border-radius:7px;display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(6,1fr);gap:1.5px}
+.qr i{border-radius:1px}
+.pcode{font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.05em}
+.pcd{font-family:var(--mono);font-size:9.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.1em}
+.pass::before,.pass::after{content:"";position:absolute;right:110px;width:15px;height:15px;border-radius:50%;background:var(--paper);border:1px solid var(--line)}
+.pass::before{top:-8px;border-bottom-color:transparent;border-left-color:transparent}
+.pass::after{bottom:-8px;border-top-color:transparent;border-right-color:transparent}
+.sechead{display:flex;align-items:center;gap:12px;padding-top:28px}
+.sechead h4{font-size:13px;letter-spacing:.04em;text-transform:uppercase;font-family:var(--mono);font-weight:500;color:var(--faint)}
+.sechead .ln{flex:1;height:1px;background:var(--line)}
+
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgba(11,14,12,.42);backdrop-filter:blur(3px);z-index:90;opacity:0;pointer-events:none;transition:opacity .28s}
+.scrim.on{opacity:1;pointer-events:auto}
+.drawer{
+  position:fixed;top:0;right:0;bottom:0;width:min(560px,100%);background:var(--paper);z-index:100;
+  transform:translateX(102%);transition:transform .34s cubic-bezier(.32,.72,.28,1);
+  display:flex;flex-direction:column;box-shadow:var(--sh-3);
+}
+.drawer.on{transform:none}
+.dr-h{display:flex;align-items:center;gap:12px;padding:16px 22px;border-bottom:1px solid var(--line);background:var(--card)}
+.dr-h h3{font-size:17px;letter-spacing:-.03em}
+.dr-h .x{margin-left:auto;width:32px;height:32px;border-radius:8px;display:grid;place-items:center;font-size:19px;color:var(--muted);transition:.16s}
+.dr-h .x:hover{background:#F0F0ED;color:var(--ink)}
+.dr-b{flex:1;overflow-y:auto;padding:22px}
+.dr-hero{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:20px}
+.dr-hero .court{margin-bottom:14px}
+.dr-facts{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding-top:14px;border-top:1px solid var(--line)}
+.dr-facts div span{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);margin-bottom:4px}
+.dr-facts div b{font-size:13.5px;font-weight:600}
+.amen{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.amen span{font-size:12px;color:var(--muted);background:#F2F2EF;border-radius:7px;padding:5px 10px}
+.dr-sec{margin-bottom:22px}
+.dr-sec > .eyebrow{display:block;margin-bottom:11px}
+.days{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px}
+.day{flex:0 0 auto;min-width:60px;padding:9px 8px;border:1px solid var(--line-2);border-radius:11px;background:var(--card);text-align:center;transition:.16s}
+.day:hover{border-color:var(--ink)}
+.day em{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-style:normal}
+.day b{display:block;font-family:var(--disp);font-weight:800;font-size:18px;letter-spacing:-.03em;margin:2px 0}
+.day i{display:block;font-family:var(--mono);font-size:9.5px;font-style:normal;color:var(--green)}
+.day i.no{color:var(--faint)}
+.day[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.day[aria-pressed="true"] em,.day[aria-pressed="true"] i{color:rgba(255,255,255,.62)}
+.tgroup{margin-bottom:16px}
+.tgroup h5{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);font-weight:500;margin:0 0 8px}
+.times{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:7px}
+.tslot{padding:10px 6px;border:1px solid var(--line-2);border-radius:10px;background:var(--card);text-align:center;transition:.14s}
+.tslot b{display:block;font-family:var(--mono);font-size:13.5px;font-weight:600}
+.tslot span{display:block;font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:2px}
+.tslot:hover:not(:disabled){border-color:var(--ink);transform:translateY(-1px)}
+.tslot.pk span{color:var(--peak)}
+.tslot:disabled{background:#F2F2EF;color:var(--faint);cursor:not-allowed;border-color:transparent}
+.tslot:disabled b{text-decoration:line-through;opacity:.5}
+.tslot[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.tslot[aria-pressed="true"] span{color:rgba(255,255,255,.65)}
+.dr-f{border-top:1px solid var(--line);background:var(--card);padding:16px 22px}
+.brk{margin-bottom:14px}
+.brk-r{display:flex;justify-content:space-between;font-size:13.5px;padding:5px 0;color:var(--muted)}
+.brk-r b{font-family:var(--mono);font-weight:500;color:var(--ink)}
+.brk-r.tot{border-top:1px solid var(--line);margin-top:7px;padding-top:11px;font-size:15px;color:var(--ink);font-weight:600}
+.brk-r.tot b{font-family:var(--disp);font-weight:800;font-size:22px;letter-spacing:-.03em}
+.stepper{display:flex;align-items:center;border:1px solid var(--line-2);border-radius:9px;overflow:hidden}
+.stepper button{width:32px;height:32px;font-family:var(--mono);font-size:15px;transition:.14s}
+.stepper button:hover{background:#F0F0ED}
+.stepper b{min-width:34px;text-align:center;font-family:var(--mono);font-size:14px}
+.optrow{display:flex;align-items:center;gap:12px;font-size:13.5px;color:var(--muted);margin-bottom:12px}
+.toggle{margin-left:auto;width:42px;height:24px;border-radius:99px;background:var(--line-2);position:relative;transition:.2s;flex-shrink:0}
+.toggle::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.2s;box-shadow:var(--sh-1)}
+.toggle[aria-pressed="true"]{background:var(--green)}
+.toggle[aria-pressed="true"]::after{transform:translateX(18px)}
+.hint{font-size:12px;color:var(--faint);margin-top:9px;text-align:center}
+.bk-type{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--green-tint);border:1px solid rgba(10,124,66,.18);border-radius:10px;margin-bottom:16px;font-size:13px;color:var(--green);font-weight:600}
+.bk-type svg{flex-shrink:0}
+
+/* modal */
+.modal{position:fixed;inset:0;z-index:110;display:none;align-items:center;justify-content:center;padding:20px}
+.modal.on{display:flex}
+.modal-c{background:var(--card);border-radius:18px;width:min(420px,100%);box-shadow:var(--sh-3);animation:pop .24s cubic-bezier(.2,.8,.3,1);overflow:hidden}
+@keyframes pop{from{transform:translateY(10px) scale(.98);opacity:0}to{transform:none;opacity:1}}
+.modal-h{padding:20px 22px 0;display:flex;align-items:flex-start;gap:12px}
+.modal-h h3{font-size:19px;letter-spacing:-.03em}
+.modal-b{padding:14px 22px 22px}
+.areas{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}
+.areas button{padding:11px 13px;border:1px solid var(--line);border-radius:10px;text-align:left;font-size:13.5px;font-weight:500;transition:.14s;background:var(--card)}
+.areas button:hover{border-color:var(--ink);background:#FAFAF8}
+.areas button em{display:block;font-style:normal;font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:2px}
+
+/* chatbot */
+.chat-fab{position:fixed;bottom:28px;right:28px;width:56px;height:56px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;cursor:pointer;box-shadow:0 4px 24px rgba(10,124,66,.38);z-index:85;transition:.22s cubic-bezier(.2,.8,.3,1)}
+.chat-fab:hover{transform:scale(1.08);box-shadow:0 6px 32px rgba(10,124,66,.48)}
+.chat-fab.hide{transform:scale(0);opacity:0;pointer-events:none}
+.chat-panel{position:fixed;bottom:96px;right:28px;width:390px;max-height:540px;background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--sh-3);z-index:86;display:flex;flex-direction:column;transform:translateY(16px) scale(.96);opacity:0;pointer-events:none;transition:.26s cubic-bezier(.2,.8,.3,1);overflow:hidden}
+.chat-panel.on{transform:none;opacity:1;pointer-events:auto}
+.chat-hdr{display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--line);background:var(--ink);color:#fff;border-radius:20px 20px 0 0}
+.chat-hdr h4{font-size:14px;letter-spacing:-.02em;font-weight:700}
+.chat-hdr .tag{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:3px 7px;border-radius:5px;background:rgba(74,222,128,.2);color:#4ADE80}
+.chat-close{margin-left:auto;color:rgba(255,255,255,.6);font-size:18px;width:28px;height:28px;display:grid;place-items:center;border-radius:6px;transition:.14s}
+.chat-close:hover{background:rgba(255,255,255,.12);color:#fff}
+.chat-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;min-height:300px;max-height:360px}
+.chat-msg{max-width:82%;padding:10px 14px;border-radius:14px;font-size:13.5px;line-height:1.5;animation:msgIn .22s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.chat-msg.bot{background:#F2F3EF;align-self:flex-start;border-bottom-left-radius:4px}
+.chat-msg.user{background:var(--ink);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.chat-msg b{font-weight:600}
+.chat-msg code{font-family:var(--mono);font-size:12px;background:rgba(0,0,0,.06);padding:1px 5px;border-radius:4px}
+.chat-typing{display:flex;gap:4px;padding:10px 14px;align-self:flex-start}
+.chat-typing span{width:6px;height:6px;border-radius:50%;background:var(--line-2);animation:typeDot .9s infinite}
+.chat-typing span:nth-child(2){animation-delay:.15s}
+.chat-typing span:nth-child(3){animation-delay:.3s}
+@keyframes typeDot{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-4px)}}
+.chat-chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 10px}
+.chat-chip{font-size:12px;padding:6px 12px;border:1px solid var(--line-2);border-radius:99px;color:var(--muted);font-weight:500;transition:.14s}
+.chat-chip:hover{border-color:var(--green);color:var(--green);background:var(--green-tint)}
+.chat-input{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--line);background:var(--card)}
+.chat-input input{flex:1;border:1px solid var(--line-2);border-radius:10px;padding:9px 14px;font:400 13.5px var(--body);color:var(--ink);outline:none;transition:.16s}
+.chat-input input:focus{border-color:var(--green)}
+.chat-input input::placeholder{color:var(--faint)}
+.chat-send{width:36px;height:36px;border-radius:10px;background:var(--green);color:#fff;display:grid;place-items:center;transition:.14s;flex-shrink:0}
+.chat-send:hover{background:#09693a}
+.chat-send:disabled{background:var(--line);color:var(--faint);cursor:not-allowed}
+
+/* misc */
+.empty{border:1px dashed var(--line-2);border-radius:18px;padding:56px 32px;text-align:center;max-width:520px;margin:24px auto 80px;background:var(--card)}
+.empty h3{font-size:22px;letter-spacing:-.03em;margin-bottom:9px}
+.empty p{color:var(--muted);margin:0 0 20px;font-size:14.5px}
+.toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,90px);z-index:130;pointer-events:none;background:var(--ink);color:#fff;padding:13px 20px;border-radius:12px;font-size:14px;font-weight:500;opacity:0;transition:.3s cubic-bezier(.2,.8,.3,1);box-shadow:var(--sh-3);display:flex;align-items:center;gap:10px;max-width:90vw}
+.toast.on{transform:translate(-50%,0);opacity:1}
+.toast i{width:7px;height:7px;border-radius:50%;background:#4ADE80;flex-shrink:0}
+.ftr{border-top:1px solid var(--line);padding:30px 0 46px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:12.5px;color:var(--faint)}
+.ftr .ar{font-family:var(--ar);color:var(--muted)}
+.rv{opacity:0;transform:translateY(14px)}
+.rv.in{opacity:1;transform:none;transition:opacity .5s ease,transform .5s cubic-bezier(.2,.8,.3,1)}
+
+.botnav{display:none}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01ms!important}.rv{opacity:1;transform:none}}
+@media (max-width:1080px){
+  .explore{grid-template-columns:1fr}
+  .mapwrap{position:relative;top:0;order:-1}
+  .hero-in{grid-template-columns:1fr;gap:30px;padding-bottom:26px}
+}
+@media (max-width:760px){
+  .hnav{display:none}
+  .searchbar{grid-template-columns:1fr 1fr;border-radius:14px}
+  .sfield:nth-child(2){border-right:none}
+  .sgo{grid-column:1/-1;justify-content:center;padding:13px}
+  .metrics{flex-wrap:wrap;gap:18px 0}
+  .metric{flex:0 0 50%}
+  .pass{grid-template-columns:1fr 96px}
+  .pass::before,.pass::after{right:88px}
+  .hdr-in{height:58px}
+  .rail{top:58px}
+  .loc span.txt{display:none}
+  .drawer{width:100%}
+  .vlist{grid-template-columns:1fr}
+  .rail-in{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .rail-in::-webkit-scrollbar{display:none}
+  .rail-in .right{margin-left:6px}
+  .rail-in .count{display:none}
+  body{padding-bottom:74px}
+  .ftr{padding-bottom:20px}
+  .toast{bottom:88px}
+  .dr-f{padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+  .chat-fab{bottom:88px;right:18px;width:50px;height:50px}
+  .chat-panel{bottom:150px;right:10px;left:10px;width:auto}
+  .botnav{
+    display:grid;grid-template-columns:repeat(3,1fr);position:fixed;left:0;right:0;bottom:0;z-index:80;
+    background:rgba(255,255,255,.95);backdrop-filter:blur(16px);border-top:1px solid var(--line);
+    padding:7px 6px calc(7px + env(safe-area-inset-bottom,0px));
+  }
+  .botnav button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:5px 0;font-size:10.5px;font-weight:600;color:var(--faint);position:relative}
+  .botnav button[aria-selected="true"]{color:var(--ink)}
+  .botnav svg{opacity:.75}
+  .botnav button[aria-selected="true"] svg{opacity:1}
+  .botnav .cnt{position:absolute;top:0;right:calc(50% - 22px);min-width:16px;height:16px;line-height:16px;
+    border-radius:99px;background:var(--red);color:#fff;font-family:var(--mono);font-size:9.5px;text-align:center;padding:0 4px}
+}
+
+
+/* text readability */
+.vcard h3,.gcard h3,.pass h3,.dr-hero h3{overflow-wrap:anywhere;word-break:break-word;line-height:1.2}
+.vmeta,.gcard .sub,.pwhere,.gnote,.map-f,.hero-sub,.pagehead p{overflow-wrap:anywhere}
+.vhead{min-width:0}
+.vhead > div:first-child{min-width:0;flex:1}
+.gtop > div{min-width:0;flex:1}
+.gcard .sub{line-height:1.4}
+.loc b{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:bottom}
+.loc{max-width:min(220px,42vw)}
+.ticker{flex-wrap:wrap;line-height:1.45}
+.ticker span{overflow-wrap:anywhere}
+.metric span{overflow-wrap:anywhere}
+.avail-h{gap:8px}
+.avail-h span,.avail-h b{overflow-wrap:anywhere}
+.dr-facts div b{overflow-wrap:anywhere;line-height:1.25}
+.amen span{overflow-wrap:anywhere}
+.pacts{gap:8px}
+.pcode{overflow-wrap:anywhere;word-break:break-all}
+.chat-msg{overflow-wrap:anywhere;word-break:break-word}
+.hnav{flex-wrap:wrap}
+.hdr-in{flex-wrap:wrap;height:auto;min-height:64px;padding:8px 0}
+.logo .ar{display:inline}
+
+/* auth overlay */
+#appShell{min-height:100vh}
+.auth-screen{
+  position:fixed;inset:0;z-index:200;display:grid;place-items:center;padding:28px var(--pad);
+  background:rgba(11,14,12,.48);backdrop-filter:blur(6px);
+}
+.auth-screen[hidden]{display:none!important}
+.auth-card{
+  width:min(440px,100%);background:var(--card);border:1px solid var(--line);
+  border-radius:20px;box-shadow:var(--sh-3);padding:28px 28px 24px;position:relative;
+}
+.auth-close{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-size:20px;color:var(--muted)}
+.auth-close:hover{background:#F0F0ED;color:var(--ink)}
+.auth-brand{display:flex;align-items:center;gap:12px;margin-bottom:22px;padding-right:28px}
+.auth-brand .mark{width:40px;height:40px;border-radius:11px;background:var(--ink);display:grid;place-items:center}
+.auth-brand h1{font-size:22px;letter-spacing:-.04em}
+.auth-brand p{margin:4px 0 0;color:var(--muted);font-size:13.5px}
+.auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;background:#F2F2EF;border-radius:12px;margin-bottom:20px}
+.auth-tabs button{padding:10px 12px;border-radius:9px;font-weight:600;font-size:14px;color:var(--muted);cursor:pointer}
+.auth-form .btn{cursor:pointer;margin-top:4px}
+.auth-tabs button[aria-selected="true"]{background:var(--card);color:var(--ink);box-shadow:var(--sh-1)}
+.auth-form{display:none;flex-direction:column;gap:12px}
+.auth-form.on{display:flex}
+.auth-form label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:var(--ink-soft)}
+.auth-form input,.auth-form select{
+  width:100%;padding:11px 13px;border:1px solid var(--line-2);border-radius:10px;
+  background:#FAFAF8;font:500 14.5px var(--body);color:var(--ink);
+}
+.auth-form input:focus,.auth-form select:focus{outline:2px solid var(--ink);outline-offset:1px;background:#fff}
+.auth-err{min-height:18px;font-size:13px;color:var(--red);margin:2px 0 0}
+.auth-hint{margin:14px 0 0;font-size:12.5px;color:var(--faint);line-height:1.45}
+.hdr-login{padding:8px 14px;border-radius:99px;border:1px solid var(--line-2);background:var(--card);font-size:13.5px;font-weight:600}
+.hdr-login:hover{border-color:var(--ink)}
+#acct[hidden],#loginHdrBtn[hidden]{display:none!important}
+
+/* account menu */
+.acct{position:relative}
+.acct-btn{display:flex;align-items:center;gap:8px;padding:3px 8px 3px 3px;border:1px solid var(--line-2);border-radius:99px;background:var(--card)}
+.acct-btn:hover{border-color:var(--ink)}
+.acct-meta{display:flex;flex-direction:column;align-items:flex-start;padding-right:6px;min-width:0;max-width:110px}
+.acct-meta b{font-size:12.5px;font-weight:600;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.acct-meta span{font-size:11px;color:var(--faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.acct-menu{
+  position:absolute;right:0;top:calc(100% + 8px);min-width:180px;background:var(--card);
+  border:1px solid var(--line);border-radius:12px;box-shadow:var(--sh-2);padding:6px;display:none;z-index:80
+}
+.acct-menu.on{display:block}
+.acct-menu button{display:block;width:100%;text-align:left;padding:10px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:var(--ink)}
+.acct-menu button:hover{background:#F2F2EF}
+@media (max-width:720px){
+  .acct-meta{display:none}
+  .passes{grid-template-columns:1fr}
+  .gwrap{grid-template-columns:1fr}
+  .vlist{grid-template-columns:1fr}
+  .searchbar{grid-template-columns:1fr}
+  .sfield{border-right:none;border-bottom:1px solid var(--line)}
+}
+
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div class="auth-screen" id="authScreen" hidden>
+  <div class="auth-card">
+    <button type="button" class="auth-close" id="authClose" aria-label="Close">&times;</button>
+    <div class="auth-brand">
+      <span class="mark">
+        <svg width="20" height="20" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <rect x="1" y="3" width="16" height="12" rx="2" stroke="#fff" stroke-width="1.3"/>
+          <line x1="9" y1="3" x2="9" y2="15" stroke="#fff" stroke-width="1.3"/>
+          <circle cx="9" cy="9" r="2.6" stroke="#4ADE80" stroke-width="1.3"/>
+        </svg>
+      </span>
+      <div>
+        <h1>Koora<span style="color:var(--green)">Jo</span></h1>
+        <p>Book pitches and join games across Amman</p>
+      </div>
+    </div>
+    <div class="auth-tabs" role="tablist">
+      <button type="button" id="tabLogin" aria-selected="true">Log in</button>
+      <button type="button" id="tabSignup" aria-selected="false">Sign up</button>
+    </div>
+
+    <form class="auth-form on" id="loginForm" autocomplete="on">
+      <label>Username or email
+        <input name="login" type="text" required placeholder="yazan or you@email.com" autocomplete="username">
+      </label>
+      <label>Password
+        <input name="password" type="password" required minlength="6" placeholder="••••••••" autocomplete="current-password">
+      </label>
+      <p class="auth-err" id="loginErr"></p>
+      <button class="btn full green" type="submit">Log in</button>
+    </form>
+
+    <form class="auth-form" id="signupForm" autocomplete="on">
+      <label>Full name
+        <input name="name" type="text" required minlength="2" placeholder="Sara Almasri" autocomplete="name">
+      </label>
+      <label>Username
+        <input name="username" type="text" required minlength="3" maxlength="20" pattern="[A-Za-z0-9_]{3,20}" placeholder="sara" autocomplete="username">
+      </label>
+      <label>Email
+        <input name="email" type="email" required placeholder="sara@email.com" autocomplete="email">
+      </label>
+      <label>Password
+        <input name="password" type="password" required minlength="6" placeholder="At least 6 characters" autocomplete="new-password">
+      </label>
+      <label>Home area
+        <select name="area" id="signupArea"></select>
+      </label>
+      <p class="auth-err" id="signupErr"></p>
+      <button class="btn full green" type="submit">Create account</button>
+    </form>
+    <p class="auth-hint">Your bookings, drop-in spots, and location are saved to your account.</p>
+  </div>
+</div>
+
+<div id="appShell">
+<header class="hdr">
+  <div class="wrap hdr-in">
+    <div class="logo">
+      <span class="mark">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <rect x="1" y="3" width="16" height="12" rx="2" stroke="#fff" stroke-width="1.3"/>
+          <line x1="9" y1="3" x2="9" y2="15" stroke="#fff" stroke-width="1.3"/>
+          <circle cx="9" cy="9" r="2.6" stroke="#4ADE80" stroke-width="1.3"/>
+        </svg>
+      </span>
+      <span class="name">Koora<i>Jo</i></span>
+      <span class="ar">كورة جو</span>
+    </div>
+    <nav class="hnav" id="tabs" role="tablist">
+      <button role="tab" data-view="explore" aria-selected="true">Book field</button>
+      <button role="tab" data-view="games" aria-selected="false">Drop-in games</button>
+      <button role="tab" data-view="passes" aria-selected="false">My bookings<span class="cnt" id="cnt" hidden>0</span></button>
+    </nav>
+    <div class="hdr-r">
+      <button class="loc" id="locBtn">
+        <span class="gps"></span><span class="txt">Near</span> <b id="locName">—</b>
+      </button>
+      <button type="button" class="hdr-login" id="loginHdrBtn">Log in</button>
+      <div class="acct" id="acct" hidden>
+        <button class="acct-btn" id="acctBtn" type="button" aria-haspopup="true" aria-expanded="false">
+          <span class="avatar" id="avatar">?</span>
+          <span class="acct-meta"><b id="acctName">Account</b><span id="acctUser">@user</span></span>
+        </button>
+        <div class="acct-menu" id="acctMenu">
+          <button type="button" id="logoutBtn">Log out</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- EXPLORE -->
+<section id="v-explore">
+  <div class="hero">
+    <div class="wrap hero-in">
+      <div>
+        <div class="ticker"><span id="tickerTxt">Loading tonight's availability</span></div>
+        <h1><span>Book the full field.</span><span class="g">Show up and play.</span></h1>
+        <p class="hero-sub">Football turf, padel courts and basketball halls across Amman — live availability, real prices, instant full-field booking.</p>
+      </div>
+      <div class="metrics">
+        <div class="metric"><b id="mSlots">0</b><span>slots open tonight</span></div>
+        <div class="metric"><b class="r" id="mGames">0</b><span>games short of players</span></div>
+        <div class="metric"><b id="mVenues">0</b><span>venues across 9 areas</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="searchbar">
+      <button class="sfield" id="sfSport"><span>Sport</span><b>Any sport</b></button>
+      <button class="sfield" id="sfArea"><span>Near</span><b id="sfAreaVal">—</b></button>
+      <button class="sfield" id="sfWhen"><span>When</span><b id="sfWhenVal">Today, any time</b></button>
+      <button class="sgo" id="sfGo">Search
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true"><circle cx="6.5" cy="6.5" r="4.6" stroke="currentColor" stroke-width="1.6"/><path d="M10 10l3.4 3.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="rail">
+    <div class="wrap rail-in">
+      <button class="chip" data-sport="all" aria-pressed="true">All sports <span class="n" id="nAll"></span></button>
+      <button class="chip" data-sport="football" aria-pressed="false"><i style="background:var(--fb)"></i>Football <span class="n" id="nfootball"></span></button>
+      <button class="chip" data-sport="padel" aria-pressed="false"><i style="background:var(--pd)"></i>Padel <span class="n" id="npadel"></span></button>
+      <button class="chip" data-sport="basketball" aria-pressed="false"><i style="background:var(--bb)"></i>Basketball <span class="n" id="nbasketball"></span></button>
+      <span class="sep"></span>
+      <button class="chip" id="fTonight" aria-pressed="false">Free tonight</button>
+      <button class="chip" id="fIndoor" aria-pressed="false">Indoor</button>
+      <div class="right">
+        <span class="count" id="resCount"></span>
+        <div class="selwrap"><label for="sortSel">Sort</label>
+          <select id="sortSel">
+            <option value="dist">Distance</option>
+            <option value="price">Price</option>
+            <option value="rating">Rating</option>
+            <option value="open">Most availability</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap explore">
+    <div class="vlist" id="vlist"></div>
+    <div class="mapwrap">
+      <div class="map-h">
+        <h4>Amman</h4>
+        <div class="lg">
+          <span><i style="background:var(--fb)"></i>FB</span>
+          <span><i style="background:var(--pd)"></i>PD</span>
+          <span><i style="background:var(--bb)"></i>BB</span>
+        </div>
+      </div>
+      <div id="mapLeaflet"></div>
+      <div class="map-f" id="mapFoot"></div>
+    </div>
+  </div>
+</section>
+
+<!-- GAMES -->
+<section id="v-games" hidden>
+  <div class="wrap">
+    <div class="pagehead">
+      <div class="eyebrow">Drop in</div>
+      <h2>Games looking for one more.</h2>
+      <p>The court is booked and paid for. Take an open spot, cover your share, play tonight.</p>
+    </div>
+  </div>
+  <div class="rail" style="margin-top:26px">
+    <div class="wrap rail-in">
+      <button class="chip gf" data-sport="all" aria-pressed="true">All sports</button>
+      <button class="chip gf" data-sport="football" aria-pressed="false"><i style="background:var(--fb)"></i>Football</button>
+      <button class="chip gf" data-sport="padel" aria-pressed="false"><i style="background:var(--pd)"></i>Padel</button>
+      <button class="chip gf" data-sport="basketball" aria-pressed="false"><i style="background:var(--bb)"></i>Basketball</button>
+      <div class="right">
+        <div class="selwrap"><label for="gSort">Sort</label>
+          <select id="gSort">
+            <option value="time">Starting soonest</option>
+            <option value="dist">Distance</option>
+            <option value="spots">Fewest spots left</option>
+            <option value="price">Price per player</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="wrap"><div class="gwrap" id="glist"></div></div>
+</section>
+
+<!-- PASSES -->
+<section id="v-passes" hidden>
+  <div class="wrap">
+    <div class="pagehead">
+      <div class="eyebrow">Your reservations</div>
+      <h2>Everything you've locked in.</h2>
+      <p>Show the code at the gate. Free cancellation up to four hours before start.</p>
+    </div>
+    <div id="passHolder"></div>
+  </div>
+</section>
+
+<div class="wrap"><footer class="ftr">
+  <span class="ar">كورة جو</span>
+  <span>Prototype — venues, prices and rosters are invented for demonstration.</span>
+  <span class="mono" style="margin-left:auto">All prices in JOD</span>
+</footer></div>
+
+<nav class="botnav" id="botnav" aria-label="Main">
+  <button data-view="explore" aria-selected="true">
+    <svg width="21" height="21" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+      <rect x="2" y="5" width="18" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/>
+      <line x1="11" y1="5" x2="11" y2="17" stroke="currentColor" stroke-width="1.6"/>
+      <circle cx="11" cy="11" r="2.6" stroke="currentColor" stroke-width="1.6"/>
+    </svg>Book
+  </button>
+  <button data-view="games" aria-selected="false">
+    <svg width="21" height="21" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+      <circle cx="8.5" cy="7" r="3" stroke="currentColor" stroke-width="1.6"/>
+      <circle cx="15.5" cy="8.5" r="2.3" stroke="currentColor" stroke-width="1.5"/>
+      <path d="M3 18c0-3 2.5-5 5.5-5s5.5 2 5.5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M16 13c2 .4 3.2 2 3.2 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>Drop-in
+  </button>
+  <button data-view="passes" aria-selected="false">
+    <svg width="21" height="21" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+      <path d="M3 7a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a2 2 0 0 0 0 4v2a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-2a2 2 0 0 0 0-4V7z" stroke="currentColor" stroke-width="1.6"/>
+      <line x1="13" y1="6.5" x2="13" y2="15.5" stroke="currentColor" stroke-width="1.4" stroke-dasharray="2 2"/>
+    </svg>Bookings
+    <span class="cnt" id="cnt2" hidden>0</span>
+  </button>
+</nav>
+
+<div class="scrim" id="scrim"></div>
+
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drTitle">
+  <div class="dr-h"><h3 id="drTitle">Venue</h3><button class="x" id="drClose" aria-label="Close">&times;</button></div>
+  <div class="dr-b" id="drBody"></div>
+  <div class="dr-f" id="drFoot"></div>
+</aside>
+
+<div class="modal" id="modal">
+  <div class="modal-c">
+    <div class="modal-h"><h3 id="mTitle">Where are you?</h3><button class="x" id="mClose" aria-label="Close" style="margin-left:auto;font-size:20px;color:var(--muted)">&times;</button></div>
+    <div class="modal-b" id="mBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><i></i><span id="toastTxt"></span></div>
+
+<!-- Chatbot -->
+<button class="chat-fab" id="chatFab" title="Chat with KooraJo AI" aria-label="Open chat">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" fill="#fff"/></svg>
+</button>
+<div class="chat-panel" id="chatPanel">
+  <div class="chat-hdr">
+    <svg width="20" height="20" viewBox="0 0 18 18" fill="none"><rect x="1" y="3" width="16" height="12" rx="2" stroke="#fff" stroke-width="1.3"/><line x1="9" y1="3" x2="9" y2="15" stroke="#fff" stroke-width="1.3"/><circle cx="9" cy="9" r="2.6" stroke="#4ADE80" stroke-width="1.3"/></svg>
+    <h4>KooraJo AI</h4>
+    <span class="tag">Assistant</span>
+    <button class="chat-close" id="chatClose" aria-label="Close chat">&times;</button>
+  </div>
+  <div class="chat-msgs" id="chatMsgs"></div>
+  <div class="chat-chips" id="chatChips"></div>
+  <div class="chat-input">
+    <input type="text" id="chatIn" placeholder="Ask about venues, booking, prices..." autocomplete="off">
+    <button class="chat-send" id="chatSend" aria-label="Send">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M14 2L7 9M14 2l-4.5 12L7 9M14 2L2 6.5 7 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+</div>
+
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script>window.KOORA = {{ bootstrap|tojson }};</script>
+<script>
+/* Bootstrap from Python (app.py → window.KOORA) */
+const $=s=>document.querySelector(s);
+const $$=s=>Array.from(document.querySelectorAll(s));
+const el=(t,c)=>{const n=document.createElement(t);if(c)n.className=c;return n;};
+
+let SPORT = window.KOORA.sport;
+let FACILITIES = window.KOORA.facilities;
+let AREAS = window.KOORA.areas;
+let GAMES = window.KOORA.games || [];
+let CURRENT_USER = window.KOORA.user; // null until logged in
+let AMMAN_CENTER = window.KOORA.ammanCenter;
+let DEFAULT_LOCATION = window.KOORA.defaultLocation || {name:"3rd Circle",lat:31.9518,lng:35.9105};
+
+/* ═══════════ STATE ═══════════ */
+const state={
+  view:"explore",sport:"all",gSport:"all",sort:"dist",gSort:"time",
+  tonight:false,indoor:false,
+  user:{...(CURRENT_USER?CURRENT_USER.location:DEFAULT_LOCATION)},
+  drawerFac:null,drDate:null,drSlot:null,drPlayers:10,drShare:false,
+  bookings: window.KOORA.bookings || [],
+  appReady:false
+};
+
+async function api(path, opts={}){
+  const res = await fetch(path, {
+    headers: {"Content-Type":"application/json", ...(opts.headers||{})},
+    ...opts
+  });
+  if(!res.ok){
+    const err = await res.json().catch(()=>({}));
+    throw new Error(err.error || res.statusText);
+  }
+  return res.json();
+}
+
+function syncStore(data){
+  if(data.reservations){ window.KOORA.reservations = data.reservations; }
+  if(data.games){ GAMES = data.games; window.KOORA.games = data.games; }
+  if(data.bookings){ state.bookings = data.bookings; window.KOORA.bookings = data.bookings; }
+  if(data.bootstrap){
+    applyBootstrap(data.bootstrap);
+  }
+}
+
+function faceLabel(username){
+  const s=String(username||"").replace(/[^a-zA-Z0-9]/g,"");
+  return (s.slice(0,2)||"?").toUpperCase();
+}
+
+function applyBootstrap(b){
+  window.KOORA = b;
+  SPORT = b.sport;
+  FACILITIES = b.facilities;
+  AREAS = b.areas;
+  GAMES = b.games || [];
+  CURRENT_USER = b.user;
+  AMMAN_CENTER = b.ammanCenter;
+  DEFAULT_LOCATION = b.defaultLocation || DEFAULT_LOCATION;
+  state.bookings = b.bookings || [];
+  window.KOORA.reservations = b.reservations || [];
+  if(CURRENT_USER && CURRENT_USER.location){
+    state.user = {...CURRENT_USER.location};
+  }
+}
+
+function showAuth(mode="login"){
+  setAuthTab(mode);
+  fillSignupAreas();
+  $("#authScreen").hidden = false;
+  document.body.style.overflow = "hidden";
+}
+function hideAuth(){
+  $("#authScreen").hidden = true;
+  document.body.style.overflow = "";
+}
+function goHome(){
+  state.view="explore";
+  ["explore","games","passes"].forEach(k=>{
+    const el=document.getElementById("v-"+k);
+    if(el) el.hidden = k!=="explore";
+  });
+  $$("#tabs button, #botnav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.view==="explore"));
+  window.scrollTo(0,0);
+  if(leafletMap) setTimeout(()=>leafletMap.invalidateSize(),100);
+  reveal();
+}
+function requireAuth(message){
+  if(CURRENT_USER) return true;
+  showAuth("login");
+  if(message) toast(message);
+  return false;
+}
+function showApp(){
+  hideAuth();
+  paintAccount();
+  const loc = (CURRENT_USER && CURRENT_USER.location) ? CURRENT_USER.location : (state.user.name ? state.user : DEFAULT_LOCATION);
+  state.user = {...loc};
+  $("#locName").textContent = state.user.name || DEFAULT_LOCATION.name;
+  $("#sfAreaVal").textContent = state.user.name || DEFAULT_LOCATION.name;
+  fillSignupAreas();
+  if(!state.appReady){
+    const m=window.KOORA.metrics || {slotsTonight:0,gamesShort:0,venues:FACILITIES.length};
+    countUp($("#mSlots"),m.slotsTonight);countUp($("#mGames"),m.gamesShort);countUp($("#mVenues"),m.venues);
+    const now=new Date();
+    $("#tickerTxt").textContent=`${now.toLocaleDateString("en",{weekday:"long",day:"numeric",month:"long"})} · ${m.slotsTonight} slots open across Amman tonight`;
+    state.appReady = true;
+  }
+  renderAll();
+  if(leafletMap) setTimeout(()=>leafletMap.invalidateSize(),80);
+}
+function paintAccount(){
+  const loggedIn = !!CURRENT_USER;
+  const loginBtn = $("#loginHdrBtn");
+  const acct = $("#acct");
+  if(loginBtn) loginBtn.hidden = loggedIn;
+  if(acct) acct.hidden = !loggedIn;
+  if(!loggedIn) return;
+  const av=$("#avatar");
+  if(av){ av.textContent=CURRENT_USER.initials; av.title=CURRENT_USER.name; }
+  const n=$("#acctName"); if(n) n.textContent=CURRENT_USER.name.split(" ")[0];
+  const u=$("#acctUser"); if(u) u.textContent="@"+CURRENT_USER.username;
+}
+function fillSignupAreas(){
+  const sel=$("#signupArea");
+  if(!sel || sel.options.length) return;
+  (AREAS||[]).forEach(a=>{
+    const o=document.createElement("option");
+    o.value=a.name; o.textContent=a.name;
+    if(a.name===DEFAULT_LOCATION.name) o.selected=true;
+    sel.appendChild(o);
+  });
+}
+
+/* ═══════════ AUTH UI ═══════════ */
+function setAuthTab(mode){
+  const login = mode==="login";
+  $("#tabLogin").setAttribute("aria-selected", login);
+  $("#tabSignup").setAttribute("aria-selected", !login);
+  $("#loginForm").classList.toggle("on", login);
+  $("#signupForm").classList.toggle("on", !login);
+  $("#loginErr").textContent="";
+  $("#signupErr").textContent="";
+}
+$("#tabLogin").onclick=()=>setAuthTab("login");
+$("#tabSignup").onclick=()=>setAuthTab("signup");
+
+$("#loginForm").onsubmit=async e=>{
+  e.preventDefault();
+  const fd=new FormData(e.target);
+  $("#loginErr").textContent="";
+  try{
+    const data=await api("/api/login",{method:"POST",body:JSON.stringify({
+      login:fd.get("login"), password:fd.get("password")
+    })});
+    applyBootstrap(data.bootstrap);
+    showApp();
+    goHome();
+    toast("Welcome back, "+CURRENT_USER.name.split(" ")[0]);
+  }catch(err){ $("#loginErr").textContent=err.message; }
+};
+
+$("#signupForm").onsubmit=async e=>{
+  e.preventDefault();
+  const fd=new FormData(e.target);
+  $("#signupErr").textContent="";
+  try{
+    const data=await api("/api/signup",{method:"POST",body:JSON.stringify({
+      name:fd.get("name"), username:fd.get("username"), email:fd.get("email"),
+      password:fd.get("password"), area:fd.get("area")
+    })});
+    applyBootstrap(data.bootstrap);
+    showApp();
+    goHome();
+    toast("Account created — you're in");
+  }catch(err){ $("#signupErr").textContent=err.message; }
+};
+
+$("#acctBtn").onclick=e=>{
+  e.stopPropagation();
+  const menu=$("#acctMenu");
+  const open=!menu.classList.contains("on");
+  menu.classList.toggle("on", open);
+  $("#acctBtn").setAttribute("aria-expanded", open);
+};
+document.addEventListener("click",()=>{$("#acctMenu")?.classList.remove("on");});
+$("#loginHdrBtn").onclick=()=>showAuth("login");
+$("#authClose").onclick=()=>hideAuth();
+$("#authScreen").addEventListener("click",e=>{ if(e.target===$("#authScreen")) hideAuth(); });
+
+$("#logoutBtn").onclick=async ()=>{
+  try{ await api("/api/logout",{method:"POST",body:"{}"}); }catch(_){}
+  CURRENT_USER=null;
+  state.bookings=[];
+  window.KOORA.user=null;
+  window.KOORA.authenticated=false;
+  window.KOORA.bookings=[];
+  $("#acctMenu").classList.remove("on");
+  paintAccount();
+  goHome();
+  renderAll();
+  toast("Logged out");
+};
+
+/* ═══════════ UTIL ═══════════ */
+const DAY=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+function haversine(a,b,c,d){const R=6371,r=Math.PI/180,dLa=(c-a)*r,dLo=(d-b)*r;
+  const x=Math.sin(dLa/2)**2+Math.cos(a*r)*Math.cos(c*r)*Math.sin(dLo/2)**2;
+  return 2*R*Math.asin(Math.sqrt(x));}
+const dist=f=>haversine(state.user.lat,state.user.lng,f.lat,f.lng);
+const fmtD=k=>k<1?Math.round(k*1000)+" m":k.toFixed(1)+" km";
+const drive=k=>Math.max(3,Math.round(k*2.6));
+const jd=n=>Number.isInteger(n)?String(n):n.toFixed(1);
+function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0)/4294967295;}
+const iso=d=>{const t=new Date(d);t.setMinutes(t.getMinutes()-t.getTimezoneOffset());return t.toISOString().slice(0,10);};
+const today=()=>iso(new Date());
+function days(n=7){const o=[],now=new Date();for(let i=0;i<n;i++){const d=new Date(now);d.setDate(now.getDate()+i);o.push(d);}return o;}
+const hhmm=m=>String(Math.floor(m/60)%24).padStart(2,"0")+":"+String(m%60).padStart(2,"0");
+const facById=id=>FACILITIES.find(f=>f.id===id);
+
+function slotsFor(f,date){
+  const out=[],d=new Date(date+"T12:00:00"),dow=d.getDay();
+  const now=new Date(),nowM=now.getHours()*60+now.getMinutes(),isToday=date===today();
+  const reserved=new Set(window.KOORA.reservations||[]);
+  for(let m=f.open*60;m+f.slot<=f.close*60;m+=f.slot){
+    const h=Math.floor(m/60),peak=h>=17&&h<23;
+    let occ=peak?0.44:0.16; if(dow===4||dow===5)occ+=0.11;
+    const sim=hash(f.id+"|"+date+"|"+m)<occ;
+    const real=reserved.has(f.id+"|"+date+"|"+m);
+    const booked=sim||real;
+    const past=isToday&&m<=nowM;
+    let p=f.price*(peak?1.45:1); if(dow===5&&h<14)p*=0.75;
+    out.push({start:m,end:m+f.slot,peak,booked,past,price:Math.round(p*2)/2});
+  }
+  return out;
+}
+const openTonight=f=>slotsFor(f,today()).filter(s=>!s.booked&&!s.past&&s.start>=17*60).length;
+const openToday=f=>slotsFor(f,today()).filter(s=>!s.booked&&!s.past).length;
+function code(){const c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let s="";for(let i=0;i<4;i++)s+=c[Math.floor(Math.random()*c.length)];return "KJ-"+s;}
+function toast(m){$("#toastTxt").textContent=m;const t=$("#toast");t.classList.add("on");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("on"),2800);}
+
+/* ═══════════ COURT SCHEMATICS ═══════════ */
+function court(sport,h){
+  const c=SPORT[sport].color, H=h||96;
+  const base=`background:${sport==="football"?"#F0F6F2":sport==="padel"?"#EFF2FC":"#FDF2EC"}`;
+  let inner="";
+  if(sport==="football"){
+    const stripes=Array.from({length:6},(_,i)=>
+      `<rect x="${6+i*58}" y="6" width="29" height="88" fill="${c}" opacity=".045"/>`).join("");
+    inner=`${stripes}
+      <rect x="6" y="6" width="348" height="88" fill="none" stroke="${c}" stroke-width="1.5" opacity=".9"/>
+      <line x1="180" y1="6" x2="180" y2="94" stroke="${c}" stroke-width="1.5" opacity=".9"/>
+      <circle cx="180" cy="50" r="17" fill="none" stroke="${c}" stroke-width="1.5" opacity=".9"/>
+      <circle cx="180" cy="50" r="2.4" fill="${c}"/>
+      <rect x="6" y="21" width="46" height="58" fill="none" stroke="${c}" stroke-width="1.4" opacity=".85"/>
+      <rect x="6" y="35" width="19" height="30" fill="none" stroke="${c}" stroke-width="1.3" opacity=".6"/>
+      <rect x="308" y="21" width="46" height="58" fill="none" stroke="${c}" stroke-width="1.4" opacity=".85"/>
+      <rect x="335" y="35" width="19" height="30" fill="none" stroke="${c}" stroke-width="1.3" opacity=".6"/>
+      <path d="M52 36a17 17 0 0 1 0 28" fill="none" stroke="${c}" stroke-width="1.3" opacity=".6"/>
+      <path d="M308 36a17 17 0 0 0 0 28" fill="none" stroke="${c}" stroke-width="1.3" opacity=".6"/>
+      <circle cx="40" cy="50" r="1.8" fill="${c}" opacity=".7"/>
+      <circle cx="320" cy="50" r="1.8" fill="${c}" opacity=".7"/>`;
+  }else if(sport==="padel"){
+    const mesh=Array.from({length:8},(_,i)=>
+      `<line x1="176" y1="${13+i*10}" x2="184" y2="${13+i*10}" stroke="${c}" stroke-width=".8" opacity=".45"/>`).join("");
+    inner=`<rect x="34" y="6" width="292" height="88" fill="${c}" opacity=".05"/>
+      <rect x="40" y="10" width="280" height="80" fill="none" stroke="${c}" stroke-width="1.5" opacity=".9"/>
+      <rect x="30" y="6" width="9" height="88" fill="${c}" opacity=".18"/>
+      <rect x="321" y="6" width="9" height="88" fill="${c}" opacity=".18"/>
+      <line x1="96" y1="10" x2="96" y2="90" stroke="${c}" stroke-width="1.3" opacity=".7"/>
+      <line x1="264" y1="10" x2="264" y2="90" stroke="${c}" stroke-width="1.3" opacity=".7"/>
+      <line x1="40" y1="50" x2="96" y2="50" stroke="${c}" stroke-width="1.3" opacity=".7"/>
+      <line x1="264" y1="50" x2="320" y2="50" stroke="${c}" stroke-width="1.3" opacity=".7"/>
+      <line x1="180" y1="8" x2="180" y2="92" stroke="${c}" stroke-width="2.4"/>
+      ${mesh}`;
+  }else{
+    inner=`<rect x="8" y="6" width="344" height="88" fill="none" stroke="${c}" stroke-width="1.5" opacity=".9"/>
+      <line x1="180" y1="6" x2="180" y2="94" stroke="${c}" stroke-width="1.5" opacity=".9"/>
+      <circle cx="180" cy="50" r="15" fill="none" stroke="${c}" stroke-width="1.4" opacity=".85"/>
+      <rect x="8" y="28" width="62" height="44" fill="${c}" opacity=".07"/>
+      <rect x="8" y="28" width="62" height="44" fill="none" stroke="${c}" stroke-width="1.4" opacity=".85"/>
+      <circle cx="70" cy="50" r="13" fill="none" stroke="${c}" stroke-width="1.3" opacity=".6"/>
+      <rect x="290" y="28" width="62" height="44" fill="${c}" opacity=".07"/>
+      <rect x="290" y="28" width="62" height="44" fill="none" stroke="${c}" stroke-width="1.4" opacity=".85"/>
+      <circle cx="290" cy="50" r="13" fill="none" stroke="${c}" stroke-width="1.3" opacity=".6"/>
+      <path d="M8 12a54 54 0 0 1 0 76" fill="none" stroke="${c}" stroke-width="1.4" opacity=".7"/>
+      <path d="M352 12a54 54 0 0 0 0 76" fill="none" stroke="${c}" stroke-width="1.4" opacity=".7"/>
+      <line x1="11" y1="41" x2="11" y2="59" stroke="${c}" stroke-width="3.2"/>
+      <line x1="349" y1="41" x2="349" y2="59" stroke="${c}" stroke-width="3.2"/>`;
+  }
+  return `<svg class="court" viewBox="0 0 360 100" style="${base};height:${H}px" preserveAspectRatio="none" aria-hidden="true">${inner}</svg>`;
+}
+
+/* ═══════════ MAP (Leaflet) ═══════════ */
+let leafletMap=null, markersLayer=null, userMarker=null;
+
+function drawMap(){
+  if(!leafletMap){
+    leafletMap=L.map("mapLeaflet",{
+      center:[state.user.lat,state.user.lng],
+      zoom:12,
+      zoomControl:false,
+      attributionControl:false
+    });
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{
+      maxZoom:19,
+      subdomains:"abcd"
+    }).addTo(leafletMap);
+    L.control.zoom({position:"bottomright"}).addTo(leafletMap);
+    L.control.attribution({position:"bottomleft",prefix:false}).addAttribution('&copy; <a href="https://carto.com">CARTO</a> &copy; <a href="https://osm.org">OSM</a>').addTo(leafletMap);
+    markersLayer=L.layerGroup().addTo(leafletMap);
+  }
+
+  markersLayer.clearLayers();
+
+  const youIcon=L.divIcon({className:"",html:`<div style="width:14px;height:14px;border-radius:50%;background:#4ADE80;border:3px solid #0B0E0C;box-shadow:0 0 0 4px rgba(74,222,128,.28)"></div>`,iconSize:[14,14],iconAnchor:[7,7]});
+  userMarker=L.marker([state.user.lat,state.user.lng],{icon:youIcon,zIndexOffset:1000}).addTo(markersLayer);
+  userMarker.bindTooltip("You",{permanent:true,direction:"top",offset:[0,-10],className:"leaflet-tooltip"});
+
+  const list=visible();
+  const near=[...list].sort((a,b)=>dist(a)-dist(b))[0];
+
+  list.forEach(f=>{
+    const c=SPORT[f.sport].color;
+    const icon=L.divIcon({className:"",html:`<div style="width:14px;height:14px;border-radius:50%;background:${c};border:2.5px solid #0B0E0C;box-shadow:0 0 0 3px ${c}44;cursor:pointer"></div>`,iconSize:[14,14],iconAnchor:[7,7]});
+    const m=L.marker([f.lat,f.lng],{icon}).addTo(markersLayer);
+    const free=openToday(f);
+    m.bindPopup(`<b>${f.name}</b><br><span style="color:#5D655F">${f.area} · ${SPORT[f.sport].label}</span><br><b>${f.price} JD</b> / ${SPORT[f.sport].unit} · ${free} slots open<br><br><button onclick="openDrawer('${f.id}')" style="padding:6px 14px;border:none;border-radius:8px;background:#0B0E0C;color:#fff;font:600 13px Outfit,sans-serif;cursor:pointer">Book full field</button>`,{maxWidth:240});
+    m.on("click",()=>m.openPopup());
+  });
+
+  if(near){
+    leafletMap.flyTo([
+      (state.user.lat+near.lat)/2,
+      (state.user.lng+near.lng)/2
+    ],12,{duration:0.6});
+  }
+
+  $("#mapFoot").innerHTML=near
+    ? `Closest match: <b>${near.name}</b> — ${fmtD(dist(near))}, about ${drive(dist(near))} min drive`
+    : `No venues match these filters`;
+}
+
+/* ═══════════ EXPLORE ═══════════ */
+function visible(){
+  let l=FACILITIES.filter(f=>(state.sport==="all"||f.sport===state.sport)
+    &&(!state.tonight||openTonight(f)>0)&&(!state.indoor||f.indoor));
+  l.sort((a,b)=>{
+    if(state.sort==="price")return a.price/(a.slot/60)-b.price/(b.slot/60);
+    if(state.sort==="rating")return b.rating-a.rating;
+    if(state.sort==="open")return openToday(b)-openToday(a);
+    return dist(a)-dist(b);
+  });
+  return l;
+}
+
+function renderVenues(){
+  const box=$("#vlist");
+  const anim=!box.dataset.done;box.dataset.done="1";
+  box.innerHTML="";
+  const list=visible();
+  const nearId=[...FACILITIES].sort((a,b)=>dist(a)-dist(b))[0].id;
+  $("#resCount").innerHTML=`<b>${list.length}</b> venue${list.length===1?"":"s"}`;
+  $("#nAll").textContent=FACILITIES.length;
+  ["football","padel","basketball"].forEach(s=>$("#n"+s).textContent=FACILITIES.filter(f=>f.sport===s).length);
+
+  if(!list.length){
+    box.innerHTML=`<div class="empty"><h3>Nothing matches those filters</h3>
+      <p>Try clearing "free tonight" or widening the sport.</p>
+      <button class="btn" onclick="clearFilters()">Clear filters</button></div>`;
+    return;
+  }
+
+  list.forEach((f,i)=>{
+    const km=dist(f),slots=slotsFor(f,today()),free=slots.filter(s=>!s.booked&&!s.past).length;
+    const tn=openTonight(f);
+    const card=el("article","vcard"+(anim?" rv":" in")+(state.drawerFac===f.id?" active":""));
+    card.style.transitionDelay=(i%6)*28+"ms";
+
+    let bars="";
+    slots.forEach(s=>{
+      const k=s.past?"past":s.booked?"taken":s.peak?"peak":"free";
+      bars+=`<button class="bar ${k}" ${s.booked||s.past?"disabled":""} data-m="${s.start}"
+        title="${hhmm(s.start)} · ${s.booked?"booked":s.past?"passed":jd(s.price)+" JD"}"
+        aria-label="${hhmm(s.start)} ${s.booked?"booked":"available"}"></button>`;
+    });
+
+    card.innerHTML=`
+      <div class="vtop">
+        ${court(f.sport,96)}
+        <div class="vbadge">
+          ${f.id===nearId?'<span class="bdg mark">Closest to you</span>':''}
+          ${f.indoor?'<span class="bdg">Indoor</span>':''}
+          ${tn>0&&tn<=2?'<span class="bdg">Only '+tn+' left tonight</span>':''}
+        </div>
+      </div>
+      <div class="vbody">
+        <div class="vhead">
+          <div>
+            <h3>${f.name}</h3>
+            <div class="vmeta">${f.area}<i class="dot"></i>${f.surface}</div>
+            <div class="vmeta"><b class="mono" style="color:var(--ink)">${fmtD(km)}</b><i class="dot"></i>${drive(km)} min drive<i class="dot"></i>★ ${f.rating} <span style="color:var(--faint)">(${f.reviews})</span></div>
+          </div>
+          <div class="vprice"><b>${jd(f.price)}</b><span>JD / ${SPORT[f.sport].unit.toUpperCase()}</span></div>
+        </div>
+        <div class="avail">
+          <div class="avail-h"><span>Today ${f.open}:00 — ${f.close===24?"24":f.close}:00</span>
+            <b class="${free?'':'none'}">${free?free+" slots open":"Fully booked"}</b></div>
+          <div class="bars">${bars}</div>
+          <div class="ticks"><span>${String(f.open).padStart(2,"0")}:00</span>
+            <span style="color:var(--peak)">peak 17—23</span>
+            <span>${f.close===24?"24":String(f.close).padStart(2,"0")}:00</span></div>
+        </div>
+        <div class="vfoot"></div>
+      </div>`;
+
+    const foot=card.querySelector(".vfoot");
+    const b=el("button","btn sm green");b.textContent="Book full field";
+    b.onclick=()=>openDrawer(f.id);
+    foot.appendChild(b);
+
+    card.querySelectorAll(".bar:not([disabled])").forEach(bar=>{
+      bar.onclick=e=>{e.stopPropagation();openDrawer(f.id,+bar.dataset.m);};
+    });
+    box.appendChild(card);
+  });
+  reveal();
+}
+
+function clearFilters(){
+  state.sport="all";state.tonight=false;state.indoor=false;
+  $$(".rail-in .chip[data-sport]:not(.gf)").forEach(c=>c.setAttribute("aria-pressed",c.dataset.sport==="all"));
+  $("#fTonight").setAttribute("aria-pressed","false");
+  $("#fIndoor").setAttribute("aria-pressed","false");
+  $("#sfWhenVal").textContent="Today, any time";
+  syncSportLabel();
+  renderVenues();drawMap();
+}
+function syncSportLabel(){
+  $("#sfSport").querySelector("b").textContent=state.sport==="all"?"Any sport":SPORT[state.sport].label;
+}
+
+/* ═══════════ DRAWER ═══════════ */
+function openDrawer(id,presetMin){
+  const f=facById(id);
+  state.drawerFac=id;
+  state.drDate=today();
+  state.drSlot=presetMin!=null?slotsFor(f,today()).find(s=>s.start===presetMin):null;
+  state.drPlayers=f.sport==="padel"?4:10;
+  state.drShare=false;
+  $("#drTitle").textContent="Book full field";
+  renderDrawer();
+  $("#drawer").classList.add("on");$("#scrim").classList.add("on");
+  document.body.style.overflow="hidden";
+  renderVenues();drawMap();
+}
+function closeDrawer(){
+  $("#drawer").classList.remove("on");$("#scrim").classList.remove("on");
+  document.body.style.overflow="";
+  state.drawerFac=null;renderVenues();drawMap();
+}
+
+function renderDrawer(){
+  const f=facById(state.drawerFac);if(!f)return;
+  const km=dist(f);
+  const slots=slotsFor(f,state.drDate);
+  const groups=[["Morning","before 12:00",s=>s.start<720],["Afternoon","12:00 — 17:00",s=>s.start>=720&&s.start<1020],["Evening","after 17:00",s=>s.start>=1020]];
+
+  let dayHtml="";
+  days().forEach(d=>{
+    const k=iso(d),free=slotsFor(f,k).filter(s=>!s.booked&&!s.past).length;
+    dayHtml+=`<button class="day" data-d="${k}" aria-pressed="${k===state.drDate}">
+      <em>${k===today()?"Today":DAY[d.getDay()]}</em><b>${d.getDate()}</b><i class="${free?'':'no'}">${free||"—"}</i></button>`;
+  });
+
+  let timeHtml="";
+  groups.forEach(([name,sub,fn])=>{
+    const g=slots.filter(fn);
+    if(!g.length||g.every(s=>s.past))return;
+    let cells="";
+    g.forEach(s=>{
+      const sel=state.drSlot&&state.drSlot.start===s.start;
+      cells+=`<button class="tslot${s.peak?" pk":""}" data-m="${s.start}" ${s.booked||s.past?"disabled":""} aria-pressed="${sel}">
+        <b>${hhmm(s.start)}</b><span>${s.booked?"booked":s.past?"passed":jd(s.price)+" JD"}</span></button>`;
+    });
+    timeHtml+=`<div class="tgroup"><h5>${name} · ${sub}</h5><div class="times">${cells}</div></div>`;
+  });
+
+  $("#drBody").innerHTML=`
+    <div class="bk-type">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.3"/><line x1="8" y1="3" x2="8" y2="13" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.2"/></svg>
+      Full field reservation — you get the entire ${f.sport==="padel"?"court":"field"}
+    </div>
+    <div class="dr-hero">
+      ${court(f.sport,132)}
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div><h3 style="font-size:19px">${f.name}</h3>
+        <div class="vmeta">${f.area}<i class="dot"></i>${fmtD(km)} away<i class="dot"></i>${drive(km)} min drive</div></div>
+        <div class="vprice" style="margin-left:auto"><b>${jd(f.price)}</b><span>JD / ${SPORT[f.sport].unit.toUpperCase()}</span></div>
+      </div>
+      <div class="dr-facts">
+        <div><span>Sport</span><b>${SPORT[f.sport].label}</b></div>
+        <div><span>Surface</span><b>${f.surface}</b></div>
+        <div><span>Rating</span><b>★ ${f.rating} <span style="color:var(--faint);font-weight:400">/ ${f.reviews}</span></b></div>
+      </div>
+      <div class="amen">${f.tags.map(t=>`<span>${t}</span>`).join("")}</div>
+    </div>
+    <div class="dr-sec"><span class="eyebrow">Choose a day</span><div class="days">${dayHtml}</div></div>
+    <div class="dr-sec"><span class="eyebrow">Available times · ${f.slot} min blocks</span>
+      ${timeHtml||'<p style="color:var(--muted);font-size:14px">Nothing left on this day. Try another date, or check the drop-in games — someone here may be one player short.</p>'}</div>`;
+
+  $$("#drBody .day").forEach(d=>d.onclick=()=>{state.drDate=d.dataset.d;state.drSlot=null;renderDrawer();});
+  $$("#drBody .tslot:not([disabled])").forEach(t=>t.onclick=()=>{
+    state.drSlot=slots.find(s=>s.start==t.dataset.m);renderDrawer();
+  });
+
+  renderDrawerFoot(f);
+}
+
+function renderDrawerFoot(f){
+  const s=state.drSlot;
+  if(!s){
+    const free=slotsFor(f,state.drDate).filter(x=>!x.booked&&!x.past).length;
+    $("#drFoot").innerHTML=`<button class="btn full" disabled>Pick a time to continue</button>
+      <div class="hint">${free} slot${free===1?"":"s"} available on this day</div>`;
+    return;
+  }
+  const fee=1,total=s.price+fee,per=total/state.drPlayers;
+  const d=new Date(state.drDate+"T12:00:00");
+  const dl=state.drDate===today()?"Today":DAY[d.getDay()]+" "+d.getDate()+" "+d.toLocaleString("en",{month:"short"});
+  $("#drFoot").innerHTML=`
+    <div class="brk">
+      <div class="brk-r"><span>${dl} · ${hhmm(s.start)}—${hhmm(s.end)}${s.peak?" · peak rate":""}</span><b>${jd(s.price)} JD</b></div>
+      <div class="brk-r"><span>Booking fee</span><b>${jd(fee)} JD</b></div>
+      <div class="brk-r tot"><span>Total (full field)</span><b>${jd(total)} JD</b></div>
+    </div>
+    <div class="optrow"><span>Players expected</span>
+      <span class="stepper"><button id="pM" aria-label="Fewer">−</button><b>${state.drPlayers}</b><button id="pP" aria-label="More">+</button></span>
+      <b class="mono" style="font-size:13px;min-width:64px;text-align:right">${jd(Math.round(per*2)/2)} JD ea</b></div>
+    <div class="optrow"><span>List it as a drop-in game<br><small style="color:var(--faint)">Others can take open spots and pay their share</small></span>
+      <button class="toggle" id="shTg" aria-pressed="${state.drShare}" aria-label="List as public game"></button></div>
+    <button class="btn green full" id="confirm">Confirm full field booking · ${jd(total)} JD</button>`;
+  $("#pM").onclick=()=>{state.drPlayers=Math.max(2,state.drPlayers-1);renderDrawerFoot(f);};
+  $("#pP").onclick=()=>{state.drPlayers=Math.min(22,state.drPlayers+1);renderDrawerFoot(f);};
+  $("#shTg").onclick=()=>{state.drShare=!state.drShare;renderDrawerFoot(f);};
+  $("#confirm").onclick=()=>confirmBooking(f);
+}
+
+async function confirmBooking(f){
+  if(!requireAuth("Log in to book a field")) return;
+  const s=state.drSlot;
+  try{
+    const data=await api("/api/book",{method:"POST",body:JSON.stringify({
+      facId:f.id, date:state.drDate, start:s.start, end:s.end,
+      price:s.price, players:state.drPlayers, share:state.drShare
+    })});
+    syncStore(data);
+    closeDrawer();
+    toast(data.toast);
+    renderAll();
+  }catch(e){ toast(e.message || "Booking failed"); }
+}
+
+/* ═══════════ GAMES ═══════════ */
+function renderGames(){
+  const box=$("#glist");
+  const anim=!box.dataset.done;box.dataset.done="1";
+  box.innerHTML="";
+  let list=GAMES.filter(g=>state.gSport==="all"||g.sport===state.gSport);
+  list.sort((a,b)=>{
+    if(state.gSort==="dist")return dist(facById(a.fac))-dist(facById(b.fac));
+    if(state.gSort==="spots")return (a.total-a.players.length)-(b.total-b.players.length);
+    if(state.gSort==="price")return a.perHead-b.perHead;
+    return (a.dayOffset*1440+a.hour*60+a.min)-(b.dayOffset*1440+b.hour*60+b.min);
+  });
+  if(!list.length){
+    box.innerHTML=`<div class="empty"><h3>No open games in this sport</h3>
+      <p>Book a full field and switch on "list it as a drop-in game" — players will find it here.</p>
+      <button class="btn" onclick="switchView('explore')">Book a field</button></div>`;
+    return;
+  }
+  list.forEach((g,i)=>{
+    const f=facById(g.fac),left=g.total-g.players.length;
+    const joined=CURRENT_USER && (g.players.includes(CURRENT_USER.username) || state.bookings.some(b=>b.kind==="game"&&b.gameId===g.id&&!b.cancelled));
+    const d=new Date();d.setDate(d.getDate()+g.dayOffset);
+    const dl=g.dayOffset===0?"Today":g.dayOffset===1?"Tomorrow":DAY[d.getDay()]+" "+d.getDate();
+    const show=g.players.slice(0,5);
+    let faces=show.map((p,k)=>{
+      const me=CURRENT_USER && p===CURRENT_USER.username;
+      return `<span class="face${me?" me":""}" title="@${p}">${faceLabel(p)}</span>`;
+    }).join("");
+    if(g.players.length>5)faces+=`<span class="face open">+${g.players.length-5}</span>`;
+    if(left>0)faces+=`<span class="face open">+</span>`;
+
+    const c=el("article","gcard"+(anim?" rv":" in"));c.style.transitionDelay=(i%6)*28+"ms";
+    c.innerHTML=`
+      <div class="gtop">
+        <span class="sport-i" style="background:${SPORT[g.sport].color}1A">
+          <svg viewBox="0 0 360 100" preserveAspectRatio="none" style="width:24px;height:15px">${court(g.sport,0).match(/>([\s\S]*)<\/svg>/)[1]}</svg></span>
+        <div><h3>${(CURRENT_USER && g.hostUsername===CURRENT_USER.username)?"Your":g.host+"'s"} ${SPORT[g.sport].label.toLowerCase()} game</h3>
+          <div class="sub">${f.name} · ${f.area} · ${fmtD(dist(f))} away</div></div>
+        <span class="lvl${left<=1?" hot":""}">${left<=0?"Full":left===1?"1 spot left":g.level}</span>
+      </div>
+      <div class="gwhen"><b>${dl}</b><span>${String(g.hour).padStart(2,"0")}:${String(g.min).padStart(2,"0")}</span><em>${g.dur} min</em></div>
+      <div class="roster"><span class="faces">${faces}</span>
+        <span class="rmeta"><b>${g.players.length}</b>/${g.total} in</span></div>
+      <div class="prog"><i style="width:${Math.round(g.players.length/g.total*100)}%"></i></div>
+      <p class="gnote">${g.note}</p>
+      <div class="gfoot"><span class="pp"><b>${jd(g.perHead)} JD</b><span>PER PLAYER</span></span></div>`;
+    const foot=c.querySelector(".gfoot");
+    const b=el("button","btn sm");
+    if(joined){b.textContent="You're in";b.disabled=true;}
+    else if(left<=0){b.textContent="Full";b.disabled=true;}
+    else{b.textContent="Take a spot";b.onclick=()=>joinGame(g);}
+    foot.appendChild(b);
+    box.appendChild(c);
+  });
+  reveal();
+}
+
+async function joinGame(g){
+  if(!requireAuth("Log in to take a spot")) return;
+  try{
+    const data=await api("/api/join",{method:"POST",body:JSON.stringify({gameId:g.id})});
+    syncStore(data);
+    toast(data.toast);
+    renderAll();
+  }catch(e){ toast(e.message || "Could not join"); }
+}
+
+/* ═══════════ PASSES ═══════════ */
+function renderPasses(){
+  const box=$("#passHolder");
+  const live=state.bookings.filter(b=>!b.cancelled);
+  [$("#cnt"),$("#cnt2")].forEach(n=>{if(n){n.textContent=live.length;n.hidden=!live.length;}});
+
+  if(!state.bookings.length){
+    box.innerHTML=`<div class="empty"><h3>Nothing booked yet</h3>
+      <p>Book a full field, grab an hour, and it shows up here as a pass with a gate code.</p>
+      <button class="btn" onclick="switchView('explore')">Book a field</button></div>`;
+    return;
+  }
+  box.innerHTML="";
+  const mk=(arr,title)=>{
+    if(!arr.length)return;
+    const h=el("div","sechead");h.innerHTML=`<h4>${title}</h4><span class="ln"></span>`;
+    box.appendChild(h);
+    const g=el("div","passes");
+    arr.forEach(b=>g.appendChild(passCard(b)));
+    box.appendChild(g);
+  };
+  const key=b=>b.date+String(b.start).padStart(4,"0");
+  mk(live.sort((a,b)=>key(a).localeCompare(key(b))),"Upcoming");
+  mk(state.bookings.filter(b=>b.cancelled),"Cancelled");
+  reveal();
+}
+
+function passCard(b){
+  if(!passCard.seen)passCard.seen=new Set();
+  const fresh=!passCard.seen.has(b.id);passCard.seen.add(b.id);
+  const f=facById(b.facId),d=new Date(b.date+"T12:00:00");
+  const dl=b.date===today()?"Today":DAY[d.getDay()]+" "+d.getDate()+" "+d.toLocaleString("en",{month:"short"});
+  const diff=Math.round((new Date(b.date)-new Date(today()))/86400000);
+  const cd=b.cancelled?"refunded":diff<=0?"today":diff===1?"tomorrow":"in "+diff+" days";
+  let qr="";for(let i=0;i<36;i++)qr+=`<i style="background:${hash(b.code+i)>0.44?"#fff":"transparent"}"></i>`;
+
+  const p=el("article","pass "+(fresh?"rv":"in")+(b.cancelled?" off":""));
+  p.innerHTML=`
+    <span class="strip" style="background:${SPORT[b.sport].color}"></span>
+    <div class="pass-m">
+      <span class="pstat${b.cancelled?" x":""}">${b.cancelled?"Cancelled":b.kind==="game"?"Drop-in · host "+b.host:"Full field booked"}</span>
+      <h3>${f.name}</h3>
+      <div class="pwhere">${f.area} · ${f.surface} · ${SPORT[b.sport].label}</div>
+      <div class="prow">
+        <div><span>Date</span><b>${dl}</b></div>
+        <div><span>Time</span><b>${hhmm(b.start)}—${hhmm(b.end)}</b></div>
+        <div><span>${b.kind==="game"?"Your share":"Total"}</span><b>${jd(b.total)} JD</b></div>
+      </div>
+      <div class="pacts"></div>
+    </div>
+    <div class="pstub"><div class="qr">${qr}</div><div class="pcode">${b.code}</div><div class="pcd">${cd}</div></div>`;
+  const acts=p.querySelector(".pacts");
+  if(!b.cancelled){
+    const c=el("button","btn sm dngr");c.textContent="Cancel";c.onclick=()=>cancelBk(b.id);
+    const s=el("button","btn sm out");s.textContent="Share code";s.onclick=()=>toast("Code "+b.code+" ready to send to your team");
+    const cal=el("button","btn sm out");cal.textContent="Add to calendar";cal.onclick=()=>toast("Added to your calendar");
+    acts.append(s,cal,c);
+  }else{
+    const n=el("span");n.className="pwhere";n.textContent="Refund issued to your original payment method.";
+    acts.appendChild(n);
+  }
+  return p;
+}
+
+async function cancelBk(id){
+  try{
+    const data=await api("/api/cancel",{method:"POST",body:JSON.stringify({bookingId:id})});
+    syncStore(data);
+    toast(data.toast);
+    renderAll();
+  }catch(e){ toast(e.message || "Cancel failed"); }
+}
+
+/* ═══════════ LOCATION ═══════════ */
+function openLoc(){
+  $("#mTitle").textContent="Where are you?";
+  $("#mBody").innerHTML=`<p style="color:var(--muted);font-size:14px;margin:0">Venues are ranked by distance from this point.</p>
+    <button class="btn full" id="geo" style="margin-top:16px">Use my current location</button>
+    <div class="eyebrow" style="margin:20px 0 0">Or choose an area</div>
+    <div class="areas" id="areas"></div>`;
+  const g=$("#areas");
+  AREAS.forEach(a=>{
+    const b=el("button");
+    const n=[...FACILITIES].sort((x,y)=>haversine(a.lat,a.lng,x.lat,x.lng)-haversine(a.lat,a.lng,y.lat,y.lng))[0];
+    b.innerHTML=`${a.name}<em>nearest: ${n.name.split(" ").slice(0,2).join(" ")}</em>`;
+    b.onclick=()=>{setLoc(a.name,a.lat,a.lng);closeModal();toast("Ranking venues from "+a.name);};
+    g.appendChild(b);
+  });
+  $("#geo").onclick=useGeo;
+  $("#modal").classList.add("on");
+}
+async function setLoc(n,lat,lng){
+  state.user={name:n,lat,lng};
+  $("#locName").textContent=n;
+  $("#sfAreaVal").textContent=n;
+  if(leafletMap) leafletMap.setView([lat,lng],12);
+  try{
+    const data=await api("/api/location",{method:"POST",body:JSON.stringify({name:n,lat,lng})});
+    if(data.user){ CURRENT_USER=data.user; window.KOORA.user=data.user; paintAccount(); }
+  }catch(_){}
+  renderAll();
+}
+function useGeo(){
+  const b=$("#geo");
+  if(!navigator.geolocation){toast("This browser won't share a location");return;}
+  b.textContent="Locating…";b.disabled=true;
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const {latitude:la,longitude:lo}=pos.coords;
+    const away=haversine(la,lo,AMMAN_CENTER.lat,AMMAN_CENTER.lng);
+    if(away>60){
+      setLoc(AREAS[0].name,AREAS[0].lat,AREAS[0].lng);closeModal();
+      toast("You're "+Math.round(away).toLocaleString()+" km from Amman — centred on 3rd Circle");
+    }else{
+      setLoc("my location",la,lo);closeModal();toast("Ranking venues from your location");
+    }
+  },()=>{b.textContent="Use my current location";b.disabled=false;toast("Location blocked — pick an area below");},{timeout:8000});
+}
+function closeModal(){$("#modal").classList.remove("on");}
+
+/* ═══════════ NAV + WIRING ═══════════ */
+function switchView(v){
+  if(v==="passes" && !CURRENT_USER){
+    showAuth("login");
+    toast("Log in to see your bookings");
+    return;
+  }
+  state.view=v;
+  ["explore","games","passes"].forEach(k=>document.getElementById("v-"+k).hidden=k!==v);
+  $$("#tabs button, #botnav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.view===v));
+  window.scrollTo({top:0,behavior:"smooth"});
+  if(v==="explore"&&leafletMap) setTimeout(()=>leafletMap.invalidateSize(),100);
+  reveal();
+}
+$$("#tabs button, #botnav button").forEach(b=>b.onclick=()=>switchView(b.dataset.view));
+
+$$(".rail-in .chip[data-sport]").forEach(c=>{
+  if(c.classList.contains("gf")){
+    c.onclick=()=>{state.gSport=c.dataset.sport;
+      $$(".chip.gf").forEach(q=>q.setAttribute("aria-pressed",q===c));renderGames();};
+  }else{
+    c.onclick=()=>{state.sport=c.dataset.sport;
+      $$(".rail-in .chip[data-sport]:not(.gf)").forEach(q=>q.setAttribute("aria-pressed",q===c));
+      syncSportLabel();renderVenues();drawMap();};
+  }
+});
+$("#fTonight").onclick=e=>{state.tonight=!state.tonight;e.currentTarget.setAttribute("aria-pressed",state.tonight);renderVenues();drawMap();};
+$("#fIndoor").onclick=e=>{state.indoor=!state.indoor;e.currentTarget.setAttribute("aria-pressed",state.indoor);renderVenues();drawMap();};
+$("#sortSel").onchange=e=>{state.sort=e.target.value;renderVenues();drawMap();};
+$("#gSort").onchange=e=>{state.gSort=e.target.value;renderGames();};
+
+$("#locBtn").onclick=openLoc;
+$("#sfArea").onclick=openLoc;
+$("#sfSport").onclick=()=>{
+  const order=["all","football","padel","basketball"];
+  const next=order[(order.indexOf(state.sport)+1)%4];
+  state.sport=next;syncSportLabel();
+  $$(".rail-in .chip[data-sport]:not(.gf)").forEach(q=>q.setAttribute("aria-pressed",q.dataset.sport===next));
+  renderVenues();drawMap();
+};
+$("#sfWhen").onclick=()=>{state.tonight=!state.tonight;
+  $("#sfWhenVal").textContent=state.tonight?"Tonight, after 17:00":"Today, any time";
+  $("#fTonight").setAttribute("aria-pressed",state.tonight);renderVenues();drawMap();};
+$("#sfGo").onclick=()=>{
+  document.querySelector(".rail").scrollIntoView({behavior:"smooth",block:"start"});
+  toast(visible().length+" venues match");
+};
+
+$("#drClose").onclick=closeDrawer;
+$("#scrim").onclick=closeDrawer;
+$("#mClose").onclick=closeModal;
+$("#modal").onclick=e=>{if(e.target===$("#modal"))closeModal();};
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeDrawer();closeModal();closeChatPanel();}});
+
+/* reveal on scroll */
+let io;
+function reveal(){
+  const items=$$(".rv:not(.in)");
+  if(!("IntersectionObserver" in window)||matchMedia("(prefers-reduced-motion:reduce)").matches){
+    items.forEach(i=>i.classList.add("in"));return;
+  }
+  if(!io)io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target);}}),{rootMargin:"0px 0px -40px 0px"});
+  items.forEach(i=>io.observe(i));
+}
+/* count-up */
+function countUp(node,to){
+  if(matchMedia("(prefers-reduced-motion:reduce)").matches){node.textContent=to;return;}
+  const dur=900,t0=performance.now();
+  const step=t=>{const p=Math.min(1,(t-t0)/dur);node.textContent=Math.round(to*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(step);};
+  requestAnimationFrame(step);
+}
+
+/* ═══════════ CHATBOT ═══════════ */
+let chatOpen=false;
+
+function toggleChat(){
+  if(!CURRENT_USER){
+    showAuth("login");
+    toast("Log in to chat with KooraJo AI");
+    return;
+  }
+  chatOpen=!chatOpen;
+  $("#chatPanel").classList.toggle("on",chatOpen);
+  if(chatOpen){
+    const msgs=$("#chatMsgs");
+    if(!msgs.children.length){
+      addBotMsg("Hey! I'm the KooraJo assistant. I can help you find venues, check availability, or answer booking questions. What are you looking for?");
+      showChips(["Find a football field","Cheapest venue?","What's open tonight?","How do I book?"]);
+    }
+    setTimeout(()=>$("#chatIn").focus(),200);
+  }
+}
+function closeChatPanel(){
+  chatOpen=false;
+  $("#chatPanel").classList.remove("on");
+}
+
+function addBotMsg(text){
+  const d=document.createElement("div");
+  d.className="chat-msg bot";
+  d.innerHTML=text.replace(/\n/g,"<br>");
+  $("#chatMsgs").appendChild(d);
+  scrollChat();
+}
+function addUserMsg(text){
+  const d=document.createElement("div");
+  d.className="chat-msg user";
+  d.textContent=text;
+  $("#chatMsgs").appendChild(d);
+  scrollChat();
+}
+function scrollChat(){
+  const c=$("#chatMsgs");
+  c.scrollTop=c.scrollHeight;
+}
+function showChips(arr){
+  const box=$("#chatChips");
+  box.innerHTML="";
+  arr.forEach(t=>{
+    const b=document.createElement("button");
+    b.className="chat-chip";
+    b.textContent=t;
+    b.onclick=()=>sendChat(t);
+    box.appendChild(b);
+  });
+}
+function showTyping(){
+  const d=document.createElement("div");
+  d.className="chat-typing";d.id="chatTyping";
+  d.innerHTML="<span></span><span></span><span></span>";
+  $("#chatMsgs").appendChild(d);
+  scrollChat();
+}
+function hideTyping(){
+  const t=$("#chatTyping");if(t)t.remove();
+}
+
+async function sendChat(text){
+  if(!text.trim())return;
+  addUserMsg(text);
+  $("#chatIn").value="";
+  $("#chatChips").innerHTML="";
+  showTyping();
+  try{
+    const res=await api("/api/chat",{method:"POST",body:JSON.stringify({message:text})});
+    hideTyping();
+    addBotMsg(res.text);
+    if(res.chips)showChips(res.chips);
+  }catch(e){
+    hideTyping();
+    addBotMsg("Sorry — the assistant is unavailable right now.");
+  }
+}
+
+$("#chatFab").onclick=toggleChat;
+$("#chatClose").onclick=closeChatPanel;
+$("#chatSend").onclick=()=>sendChat($("#chatIn").value);
+$("#chatIn").addEventListener("keydown",e=>{if(e.key==="Enter")sendChat($("#chatIn").value);});
+
+/* ═══════════ BOOT ═══════════ */
+function renderAll(){renderVenues();drawMap();renderGames();renderPasses();}
+
+(function boot(){
+  // Always open on the home page. Guests browse freely; Log in is optional.
+  if(!(window.KOORA.authenticated && CURRENT_USER)){
+    CURRENT_USER = null;
+    state.bookings = [];
+    state.user = {...DEFAULT_LOCATION};
+  }
+  showApp();
+  goHome();
+})();
+
+</script>
+</div><!-- /appShell -->
+</body>
+</html>
