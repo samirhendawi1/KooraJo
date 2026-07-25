@@ -472,6 +472,16 @@ def bootstrap_js():
     return send_from_directory(ROOT, "bootstrap.js")
 
 
+@app.route("/cloud.js")
+def cloud_js():
+    return send_from_directory(ROOT, "cloud.js")
+
+
+@app.route("/firebase-config.js")
+def firebase_config_js():
+    return send_from_directory(ROOT, "firebase-config.js")
+
+
 @app.post("/api/signup")
 def api_signup():
     body = request.get_json(silent=True) or {}
