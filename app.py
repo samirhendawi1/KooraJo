@@ -482,6 +482,11 @@ def firebase_config_js():
     return send_from_directory(ROOT, "firebase-config.js")
 
 
+@app.route("/assets/<path:filename>")
+def assets(filename: str):
+    return send_from_directory(ROOT / "assets", filename)
+
+
 @app.post("/api/signup")
 def api_signup():
     body = request.get_json(silent=True) or {}
