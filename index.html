@@ -766,13 +766,19 @@ h1,h2,h3,h4{margin:0;font-family:var(--disp);font-weight:800;letter-spacing:-.03
 
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-<script>window.KOORA = {{ bootstrap|tojson }};</script>
+<script src="bootstrap.js"></script>
 <script>
-/* Bootstrap from Python (app.py → window.KOORA) */
+/* Works with Flask locally OR static Netlify (bootstrap.js + localStorage). */
 const $=s=>document.querySelector(s);
 const $$=s=>Array.from(document.querySelectorAll(s));
 const el=(t,c)=>{const n=document.createElement(t);if(c)n.className=c;return n;};
 
+if(!window.KOORA || !window.KOORA.facilities){
+  console.error("bootstrap.js failed to load — venues will be empty");
+  window.KOORA = {sport:{},facilities:[],areas:[],games:[],bookings:[],reservations:[],user:null,authenticated:false,metrics:{slotsTonight:0,gamesShort:0,venues:0},defaultLocation:{name:"3rd Circle",lat:31.9518,lng:35.9105},ammanCenter:{lat:31.9515,lng:35.9239}};
+}
+
+let STATIC_MODE = false; // true on Netlify (no Flask /api)
 let SPORT = window.KOORA.sport;
 let FACILITIES = window.KOORA.facilities;
 let AREAS = window.KOORA.areas;
@@ -791,16 +797,211 @@ const state={
   appReady:false
 };
 
-async function api(path, opts={}){
-  const res = await fetch(path, {
-    headers: {"Content-Type":"application/json", ...(opts.headers||{})},
-    ...opts
-  });
-  if(!res.ok){
-    const err = await res.json().catch(()=>({}));
-    throw new Error(err.error || res.statusText);
+const LS_KEY = "koora_jo_store_v1";
+function lsLoad(){
+  try{ return JSON.parse(localStorage.getItem(LS_KEY)||"null") || {users:[],games:null,bookings:[],reservations:[],sessionUserId:null}; }
+  catch(_){ return {users:[],games:null,bookings:[],reservations:[],sessionUserId:null}; }
+}
+function lsSave(store){ localStorage.setItem(LS_KEY, JSON.stringify(store)); }
+function lsPublicUser(u){
+  if(!u) return null;
+  return {id:u.id,name:u.name,username:u.username,email:u.email,initials:u.initials,location:u.location};
+}
+function lsBootstrap(store, user){
+  const games = store.games || window.KOORA.games || [];
+  const bookings = user ? (store.bookings||[]).filter(b=>b.userId===user.id) : [];
+  return {
+    sport: window.KOORA.sport,
+    facilities: window.KOORA.facilities,
+    areas: window.KOORA.areas,
+    games,
+    bookings,
+    reservations: store.reservations||[],
+    user: lsPublicUser(user),
+    ammanCenter: window.KOORA.ammanCenter,
+    defaultLocation: window.KOORA.defaultLocation,
+    authenticated: !!user,
+    metrics: window.KOORA.metrics
+  };
+}
+function lsGateCode(){
+  const c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; let s="";
+  for(let i=0;i<4;i++) s+=c[Math.floor(Math.random()*c.length)];
+  return "KJ-"+s;
+}
+function lsInitials(name){
+  const p=String(name||"").trim().split(/\s+/).filter(Boolean);
+  if(!p.length) return "?";
+  if(p.length===1) return p[0].slice(0,2).toUpperCase();
+  return (p[0][0]+p[p.length-1][0]).toUpperCase();
+}
+async function apiStatic(path, opts={}){
+  const method = (opts.method||"GET").toUpperCase();
+  const body = opts.body ? JSON.parse(opts.body) : {};
+  const store = lsLoad();
+  if(!store.games) store.games = JSON.parse(JSON.stringify(window.KOORA.games||[]));
+
+  const findUser = (login)=>{
+    const key=String(login||"").trim().toLowerCase();
+    return (store.users||[]).find(u=>u.username===key || u.email===key);
+  };
+  const sessionUser = ()=> (store.users||[]).find(u=>u.id===store.sessionUserId) || null;
+
+  if(path==="/api/me" && method==="GET"){
+    const user=sessionUser();
+    return {authenticated:!!user, user:lsPublicUser(user), bootstrap:lsBootstrap(store,user)};
   }
-  return res.json();
+  if(path==="/api/logout" && method==="POST"){
+    store.sessionUserId=null; lsSave(store); return {ok:true};
+  }
+  if(path==="/api/signup" && method==="POST"){
+    const name=String(body.name||"").trim();
+    const username=String(body.username||"").trim().toLowerCase();
+    const email=String(body.email||"").trim().toLowerCase();
+    const password=String(body.password||"");
+    if(name.length<2) throw new Error("Enter your full name");
+    if(!/^[a-z0-9_]{3,20}$/.test(username)) throw new Error("Username must be 3–20 characters (letters, numbers, _)");
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Enter a valid email");
+    if(password.length<6) throw new Error("Password must be at least 6 characters");
+    if(findUser(username)||findUser(email)) throw new Error("Username or email already registered");
+    const area=(AREAS||[]).find(a=>a.name===body.area) || DEFAULT_LOCATION;
+    const user={
+      id:"u"+Date.now(), name, username, email, password,
+      initials:lsInitials(name),
+      location:{name:area.name,lat:area.lat,lng:area.lng},
+      created_at:new Date().toISOString()
+    };
+    store.users.push(user);
+    store.sessionUserId=user.id;
+    lsSave(store);
+    return {user:lsPublicUser(user), bootstrap:lsBootstrap(store,user)};
+  }
+  if(path==="/api/login" && method==="POST"){
+    const user=findUser(body.login);
+    if(!user || user.password!==String(body.password||"")) throw new Error("Wrong username/email or password");
+    store.sessionUserId=user.id; lsSave(store);
+    return {user:lsPublicUser(user), bootstrap:lsBootstrap(store,user)};
+  }
+  if(path==="/api/location" && method==="POST"){
+    const user=sessionUser(); if(!user) throw new Error("Please log in first");
+    user.location={name:body.name||"my location",lat:+body.lat,lng:+body.lng};
+    lsSave(store);
+    return {user:lsPublicUser(user)};
+  }
+  if(path==="/api/book" && method==="POST"){
+    const user=sessionUser(); if(!user) throw new Error("Please log in first");
+    const fac=(FACILITIES||[]).find(f=>f.id===body.facId); if(!fac) throw new Error("Unknown facility");
+    const key=`${fac.id}|${body.date}|${body.start}`;
+    if((store.reservations||[]).includes(key)) throw new Error("That slot was just taken — pick another time");
+    store.reservations=store.reservations||[];
+    store.reservations.push(key);
+    const fee=1, total=(+body.price)+fee;
+    const booking={
+      id:"b"+Date.now(), userId:user.id, username:user.username, kind:"court",
+      sport:fac.sport, facId:fac.id, date:body.date, start:+body.start, end:+body.end,
+      total, players:+body.players||10, code:lsGateCode(), cancelled:false,
+      created_at:new Date().toISOString()
+    };
+    store.bookings.unshift(booking);
+    if(body.share){
+      const today=new Date(); today.setHours(0,0,0,0);
+      const target=new Date(body.date+"T00:00:00");
+      const off=Math.round((target-today)/86400000);
+      store.games.unshift({
+        id:"g"+Date.now(), sport:fac.sport, fac:fac.id,
+        host:user.name.split(" ")[0], hostUsername:user.username,
+        players:[user.username], dayOffset:off,
+        hour:Math.floor(+body.start/60), min:(+body.start)%60, dur:fac.slot,
+        total:+body.players||10, perHead:Math.round((total/(+body.players||10))*2)/2,
+        level:"Mixed", note:"Open spots. Pay your share at the gate.",
+        mine:true, ownerId:user.id
+      });
+    }
+    lsSave(store);
+    return {
+      booking,
+      toast: body.share ? "Booked full field & listed as a drop-in game" : `Full field booked · ${booking.code}`,
+      games:store.games, bookings:store.bookings.filter(b=>b.userId===user.id),
+      reservations:store.reservations, bootstrap:lsBootstrap(store,user)
+    };
+  }
+  if(path==="/api/join" && method==="POST"){
+    const user=sessionUser(); if(!user) throw new Error("Please log in first");
+    const game=(store.games||[]).find(g=>g.id===body.gameId);
+    if(!game) throw new Error("Game not found");
+    if(game.players.length>=game.total) throw new Error("Game is full");
+    if(game.players.includes(user.username)) throw new Error("You're already in this game");
+    game.players.push(user.username);
+    const fac=(FACILITIES||[]).find(f=>f.id===game.fac);
+    const d=new Date(); d.setDate(d.getDate()+game.dayOffset);
+    const booking={
+      id:"b"+Date.now(), userId:user.id, username:user.username, kind:"game", gameId:game.id,
+      sport:game.sport, facId:fac.id, date:d.toISOString().slice(0,10),
+      start:game.hour*60+game.min, end:game.hour*60+game.min+game.dur,
+      total:game.perHead, players:1, host:game.host, code:lsGateCode(), cancelled:false,
+      created_at:new Date().toISOString()
+    };
+    store.bookings.unshift(booking); lsSave(store);
+    return {booking, toast:`You're in ${game.host}'s game`, games:store.games,
+      bookings:store.bookings.filter(b=>b.userId===user.id), bootstrap:lsBootstrap(store,user)};
+  }
+  if(path==="/api/cancel" && method==="POST"){
+    const user=sessionUser(); if(!user) throw new Error("Please log in first");
+    const booking=(store.bookings||[]).find(b=>b.id===body.bookingId && b.userId===user.id);
+    if(!booking) throw new Error("Booking not found");
+    booking.cancelled=true;
+    if(booking.kind==="court"){
+      const key=`${booking.facId}|${booking.date}|${booking.start}`;
+      store.reservations=(store.reservations||[]).filter(k=>k!==key);
+    }else if(booking.kind==="game"){
+      const game=(store.games||[]).find(g=>g.id===booking.gameId);
+      if(game) game.players=game.players.filter(p=>p!==user.username);
+    }
+    lsSave(store);
+    return {bookings:store.bookings.filter(b=>b.userId===user.id), games:store.games,
+      reservations:store.reservations, bootstrap:lsBootstrap(store,user),
+      toast:"Booking cancelled · full refund issued"};
+  }
+  if(path==="/api/chat" && method==="POST"){
+    if(!sessionUser()) throw new Error("Please log in first");
+    const q=String(body.message||"").toLowerCase();
+    let text="I can help with venues, prices, and drop-in games. Try asking about football, padel, or what's open tonight.";
+    if(/tonight|open|available/.test(q)) text=`There are about <b>${window.KOORA.metrics?.slotsTonight||0} slots</b> open tonight across Amman. Browse the Book field tab to reserve one.`;
+    else if(/cheap|price|afford/.test(q)) text="Prices usually range from about <b>15–90 JD</b> depending on the venue and peak hours.";
+    else if(/book|how/.test(q)) text="Pick a venue → choose a time → confirm. You can also list it as a drop-in so others can join and split the cost.";
+    else if(/padel|football|basket/.test(q)) text="Use the sport filters on the home page to see matching venues and open drop-in games.";
+    return {text, chips:["What's open tonight?","Cheapest venues","How do I book?"]};
+  }
+  throw new Error("Not available offline");
+}
+
+async function api(path, opts={}){
+  if(STATIC_MODE) return apiStatic(path, opts);
+  try{
+    const res = await fetch(path, {
+      headers: {"Content-Type":"application/json", ...(opts.headers||{})},
+      ...opts
+    });
+    const ct = res.headers.get("content-type")||"";
+    if(!ct.includes("application/json")){
+      STATIC_MODE = true;
+      return apiStatic(path, opts);
+    }
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || res.statusText);
+    return data;
+  }catch(err){
+    if(err && err.message && !/Failed to fetch|NetworkError|fetch/i.test(err.message) && STATIC_MODE===false){
+      // Real API JSON error (e.g. wrong password) — don't flip to static
+      if(!(err instanceof TypeError)) throw err;
+    }
+    // Network / non-JSON host → static mode
+    if(err instanceof TypeError || STATIC_MODE){
+      STATIC_MODE = true;
+      return apiStatic(path, opts);
+    }
+    throw err;
+  }
 }
 
 function syncStore(data){
@@ -1679,13 +1880,46 @@ $("#chatIn").addEventListener("keydown",e=>{if(e.key==="Enter")sendChat($("#chat
 /* ═══════════ BOOT ═══════════ */
 function renderAll(){renderVenues();drawMap();renderGames();renderPasses();}
 
-(function boot(){
-  // Always open on the home page. Guests browse freely; Log in is optional.
+(async function boot(){
+  // Prefer Flask session when available; otherwise use bootstrap.js (+ localStorage).
+  try{
+    const me = await fetch("/api/me", {headers:{"Accept":"application/json"}});
+    const ct = me.headers.get("content-type")||"";
+    if(me.ok && ct.includes("application/json")){
+      const data = await me.json();
+      STATIC_MODE = false;
+      if(data.bootstrap) applyBootstrap(data.bootstrap);
+      else if(data.user){ CURRENT_USER=data.user; window.KOORA.user=data.user; window.KOORA.authenticated=true; }
+    }else{
+      STATIC_MODE = true;
+      const store=lsLoad();
+      if(store.sessionUserId){
+        const user=(store.users||[]).find(u=>u.id===store.sessionUserId);
+        if(user) applyBootstrap(lsBootstrap(store,user));
+      }
+    }
+  }catch(_){
+    STATIC_MODE = true;
+    const store=lsLoad();
+    if(store.sessionUserId){
+      const user=(store.users||[]).find(u=>u.id===store.sessionUserId);
+      if(user) applyBootstrap(lsBootstrap(store,user));
+    }
+  }
+
   if(!(window.KOORA.authenticated && CURRENT_USER)){
     CURRENT_USER = null;
     state.bookings = [];
     state.user = {...DEFAULT_LOCATION};
   }
+  // Refresh metrics from live slot math when possible
+  try{
+    if(FACILITIES.length){
+      const slots=FACILITIES.reduce((n,f)=>n+openTonight(f),0);
+      const short=GAMES.filter(g=>g.total-g.players.length>0&&g.total-g.players.length<=3).length;
+      window.KOORA.metrics={slotsTonight:slots,gamesShort:short,venues:FACILITIES.length};
+    }
+  }catch(_){}
   showApp();
   goHome();
 })();

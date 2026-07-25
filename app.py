@@ -19,7 +19,7 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-from flask import Flask, jsonify, render_template, request, session
+from flask import Flask, jsonify, request, session, send_from_directory
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from data import AMMAN_CENTER, AREAS, DEFAULT_LOCATION, FACILITIES, GAMES, SPORT
@@ -91,13 +91,6 @@ def save_reservations() -> None:
     _write_json(RESERVATIONS_FILE, sorted(STORE["reservations"]))
 
 
-def save_all() -> None:
-    save_users()
-    save_games()
-    save_bookings()
-    save_reservations()
-
-
 # ─── users / auth helpers ────────────────────────────────────────────────────
 
 def initials_for(name: str) -> str:
@@ -147,14 +140,6 @@ def require_user():
     if not user:
         return None, (jsonify({"error": "Please log in first"}), 401)
     return user, None
-
-
-def face_label(username: str) -> str:
-    """Two-letter face label from a username."""
-    clean = re.sub(r"[^a-zA-Z0-9]", "", username or "")
-    if len(clean) >= 2:
-        return clean[:2].upper()
-    return (clean or "?").upper()
 
 
 # ─── venues / slots ──────────────────────────────────────────────────────────
@@ -479,12 +464,12 @@ def chat_response(message: str) -> dict:
 
 @app.route("/")
 def index():
-    user = current_user()
-    return render_template(
-        "index.html",
-        bootstrap=bootstrap_payload(user),
-        user=public_user(user) if user else None,
-    )
+    return send_from_directory(ROOT, "index.html")
+
+
+@app.route("/bootstrap.js")
+def bootstrap_js():
+    return send_from_directory(ROOT, "bootstrap.js")
 
 
 @app.post("/api/signup")
