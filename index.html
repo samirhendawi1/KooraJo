@@ -1749,8 +1749,27 @@ $("#chatIn").addEventListener("keydown",e=>{if(e.key==="Enter")sendChat($("#chat
 /* ═══════════ BOOT ═══════════ */
 function renderAll(){renderVenues();drawMap();renderGames();renderPasses();}
 
+function refreshMetrics(){
+  try{
+    if(FACILITIES.length){
+      const slots=FACILITIES.reduce((n,f)=>n+openTonight(f),0);
+      const short=GAMES.filter(g=>g.total-g.players.length>0&&g.total-g.players.length<=3).length;
+      window.KOORA.metrics={slotsTonight:slots,gamesShort:short,venues:FACILITIES.length};
+    }
+  }catch(_){}
+}
+
 (async function boot(){
-  // Prefer Flask session when available; otherwise Firebase / localStorage via cloud.js
+  // 1. Render immediately from the bootstrap.js seed (guest view) —
+  //    never block first paint on the network.
+  CURRENT_USER = null;
+  state.bookings = [];
+  state.user = {...DEFAULT_LOCATION};
+  refreshMetrics();
+  showApp();
+  goHome();
+
+  // 2. Hydrate: Flask session if available, otherwise Firebase/local via cloud.js
   try{
     const me = await fetch("/api/me", {headers:{"Accept":"application/json"}});
     const ct = me.headers.get("content-type")||"";
@@ -1777,16 +1796,8 @@ function renderAll(){renderVenues();drawMap();renderGames();renderPasses();}
     state.bookings = [];
     state.user = {...DEFAULT_LOCATION};
   }
-  // Refresh metrics from live slot math when possible
-  try{
-    if(FACILITIES.length){
-      const slots=FACILITIES.reduce((n,f)=>n+openTonight(f),0);
-      const short=GAMES.filter(g=>g.total-g.players.length>0&&g.total-g.players.length<=3).length;
-      window.KOORA.metrics={slotsTonight:slots,gamesShort:short,venues:FACILITIES.length};
-    }
-  }catch(_){}
+  refreshMetrics();
   showApp();
-  goHome();
 })();
 
 </script>

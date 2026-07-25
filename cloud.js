@@ -365,6 +365,8 @@
   }
 
   /* ─── Firebase ─── */
+  let authReadyPromise = null;
+
   function initFirebase() {
     if (!global.FIREBASE_CONFIGURED || !global.firebase) return false;
     try {
@@ -382,39 +384,202 @@
     }
   }
 
-  async function ensureGamesSeeded() {
-    if (gamesSeeded || !fbDb) return;
-    const snap = await fbDb.collection("games").limit(1).get();
-    if (snap.empty) {
-      const batch = fbDb.batch();
-      (global.KOORA.games || []).forEach((g) => {
-        batch.set(fbDb.collection("games").doc(g.id), g);
+  // Firebase restores the session asynchronously — wait for the first
+  // auth-state event before deciding whether the user is logged in.
+  function waitForAuth() {
+    if (!fbAuth) return Promise.resolve(null);
+    if (!authReadyPromise) {
+      authReadyPromise = new Promise((resolve) => {
+        const stop = fbAuth.onAuthStateChanged(
+          (u) => {
+            stop();
+            resolve(u);
+          },
+          () => {
+            stop();
+            resolve(null);
+          }
+        );
+        setTimeout(() => resolve(fbAuth.currentUser), 7000);
       });
-      await batch.commit();
     }
-    gamesSeeded = true;
+    return authReadyPromise;
   }
 
+  function withTimeout(promise, ms) {
+    return new Promise((resolve, reject) => {
+      const t = setTimeout(
+        () => reject(new Error("Cloud request timed out")),
+        ms
+      );
+      promise.then(
+        (v) => {
+          clearTimeout(t);
+          resolve(v);
+        },
+        (e) => {
+          clearTimeout(t);
+          reject(e);
+        }
+      );
+    });
+  }
+
+  const PROFILE_CACHE = "koora_cloud_profile";
+  function cacheProfile(p) {
+    try {
+      localStorage.setItem(PROFILE_CACHE + "_" + p.id, JSON.stringify(p));
+    } catch (_) {}
+  }
+  function cachedProfile(uid) {
+    try {
+      return JSON.parse(
+        localStorage.getItem(PROFILE_CACHE + "_" + uid) || "null"
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // Minimal profile derived from the Firebase Auth user when Firestore
+  // is unreachable (e.g. database not created yet).
+  function derivedProfile(fbUser) {
+    const email = (fbUser.email || "").toLowerCase();
+    const name = fbUser.displayName || email.split("@")[0] || "Player";
+    let username = (email.split("@")[0] || "player")
+      .replace(/[^a-z0-9_]/gi, "")
+      .toLowerCase()
+      .slice(0, 20);
+    if (username.length < 3)
+      username = "player" + String(fbUser.uid || "0000").slice(0, 4).toLowerCase();
+    const loc = global.KOORA.defaultLocation || {
+      name: "3rd Circle",
+      lat: 31.9518,
+      lng: 35.9105,
+    };
+    return {
+      id: fbUser.uid,
+      name,
+      username,
+      email,
+      initials: lsInitials(name),
+      location: { name: loc.name, lat: loc.lat, lng: loc.lng },
+      provider: "derived",
+      created_at: new Date().toISOString(),
+    };
+  }
+
+  function isDbError(err) {
+    const code = (err && err.code) || "";
+    return (
+      /permission-denied|unavailable|failed-precondition|not-found|resource-exhausted|deadline/.test(
+        String(code)
+      ) ||
+      /timed out|firestore|PERMISSION_DENIED|transport errored/i.test(
+        String((err && err.message) || "")
+      )
+    );
+  }
+  function friendlyDbError(err) {
+    if (isDbError(err))
+      return "Cloud database isn't set up — in Firebase console open Firestore Database → Create database, then retry.";
+    return (err && err.message) || "Something went wrong";
+  }
+
+  // Once Firestore proves unreachable (e.g. database not created),
+  // stop hitting it for the rest of the session so the UI stays fast.
+  let dbDown = false;
+
+  async function ensureGamesSeeded() {
+    if (gamesSeeded || !fbDb || dbDown) return;
+    try {
+      const snap = await withTimeout(
+        fbDb.collection("games").limit(1).get(),
+        6000
+      );
+      if (snap.empty) {
+        const batch = fbDb.batch();
+        (global.KOORA.games || []).forEach((g) => {
+          batch.set(fbDb.collection("games").doc(g.id), g);
+        });
+        await withTimeout(batch.commit(), 6000);
+      }
+      gamesSeeded = true;
+    } catch (err) {
+      // Firestore missing or rules deny guest writes — seed games from bootstrap.js instead
+      if (isDbError(err)) dbDown = true;
+      console.warn("Cloud games seed skipped:", err && err.message);
+    }
+  }
+
+  // Never throws — falls back to bootstrap.js seed so the app always renders.
   async function loadCloudState(uid) {
+    const fallback = {
+      user: uid ? cachedProfile(uid) : null,
+      games: global.KOORA.games || [],
+      bookings: [],
+      reservations: [],
+    };
+    if (dbDown) return fallback;
     await ensureGamesSeeded();
-    const [userSnap, gamesSnap, bookingsSnap, resSnap] = await Promise.all([
-      uid ? fbDb.collection("users").doc(uid).get() : Promise.resolve(null),
-      fbDb.collection("games").get(),
+    if (dbDown) return fallback;
+
+    const [gamesRes, userRes, bookingsRes, resRes] = await Promise.allSettled([
+      withTimeout(fbDb.collection("games").get(), 7000),
       uid
-        ? fbDb.collection("bookings").where("userId", "==", uid).get()
-        : Promise.resolve({ docs: [] }),
-      fbDb.collection("meta").doc("reservations").get(),
+        ? withTimeout(fbDb.collection("users").doc(uid).get(), 7000)
+        : Promise.resolve(null),
+      uid
+        ? withTimeout(
+            fbDb.collection("bookings").where("userId", "==", uid).get(),
+            7000
+          )
+        : Promise.resolve(null),
+      withTimeout(fbDb.collection("meta").doc("reservations").get(), 7000),
     ]);
-    const user = userSnap && userSnap.exists ? { id: uid, ...userSnap.data() } : null;
-    const games = gamesSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-    const bookings = bookingsSnap.docs
-      .map((d) => ({ id: d.id, ...d.data() }))
-      .sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
-    const reservations =
-      resSnap.exists && Array.isArray(resSnap.data().keys)
-        ? resSnap.data().keys
-        : [];
+    for (const r of [gamesRes, userRes, bookingsRes, resRes]) {
+      if (r.status === "rejected" && isDbError(r.reason)) dbDown = true;
+    }
+
+    let user = fallback.user;
+    let games = fallback.games;
+    let bookings = [];
+    let reservations = [];
+    if (gamesRes.status === "fulfilled" && !gamesRes.value.empty)
+      games = gamesRes.value.docs.map((d) => ({ id: d.id, ...d.data() }));
+    if (userRes.status === "fulfilled" && userRes.value && userRes.value.exists)
+      user = { id: uid, ...userRes.value.data() };
+    if (bookingsRes.status === "fulfilled" && bookingsRes.value)
+      bookings = bookingsRes.value.docs
+        .map((d) => ({ id: d.id, ...d.data() }))
+        .sort((a, b) =>
+          String(b.created_at || "").localeCompare(String(a.created_at || ""))
+        );
+    if (
+      resRes.status === "fulfilled" &&
+      resRes.value.exists &&
+      Array.isArray(resRes.value.data().keys)
+    )
+      reservations = resRes.value.data().keys;
     return { user, games, bookings, reservations };
+  }
+
+  // Resolve a full profile for a signed-in Firebase user:
+  // Firestore doc → cached copy → derived from the auth account.
+  async function resolveProfile(fbUser, stUser) {
+    if (stUser) {
+      cacheProfile(stUser);
+      return stUser;
+    }
+    if (dbDown) return cachedProfile(fbUser.uid) || derivedProfile(fbUser);
+    try {
+      const profile = await withTimeout(upsertGoogleProfile(fbUser), 8000);
+      cacheProfile(profile);
+      return profile;
+    } catch (err) {
+      if (isDbError(err)) dbDown = true;
+      return cachedProfile(fbUser.uid) || derivedProfile(fbUser);
+    }
   }
 
   async function claimUsername(username, uid, email) {
@@ -480,6 +645,16 @@
   }
 
   async function apiCloud(path, opts = {}) {
+    try {
+      return await apiCloudInner(path, opts);
+    } catch (err) {
+      // Intentional errors ("Game is full", …) pass through unchanged;
+      // raw Firestore failures become an actionable message.
+      throw new Error(friendlyDbError(err));
+    }
+  }
+
+  async function apiCloudInner(path, opts = {}) {
     const method = (opts.method || "GET").toUpperCase();
     const body = opts.body ? JSON.parse(opts.body) : {};
     const FACILITIES = global.KOORA.facilities || [];
@@ -487,7 +662,7 @@
     const DEFAULT_LOCATION = global.KOORA.defaultLocation;
 
     if (path === "/api/me" && method === "GET") {
-      const fbUser = fbAuth.currentUser;
+      const fbUser = await waitForAuth();
       if (!fbUser) {
         const st = await loadCloudState(null);
         return {
@@ -497,15 +672,11 @@
         };
       }
       const st = await loadCloudState(fbUser.uid);
+      const user = await resolveProfile(fbUser, st.user);
       return {
-        authenticated: !!st.user,
-        user: publicUser(st.user),
-        bootstrap: seedBootstrap(
-          st.user,
-          st.games,
-          st.bookings,
-          st.reservations
-        ),
+        authenticated: true,
+        user: publicUser(user),
+        bootstrap: seedBootstrap(user, st.games, st.bookings, st.reservations),
       };
     }
 
@@ -533,8 +704,16 @@
       if (password.length < 6)
         throw new Error("Password must be at least 6 characters");
 
-      const unameSnap = await fbDb.collection("usernames").doc(username).get();
-      if (unameSnap.exists) throw new Error("Username already registered");
+      // Username uniqueness check is best-effort when the DB is unreachable
+      try {
+        const unameSnap = await withTimeout(
+          fbDb.collection("usernames").doc(username).get(),
+          6000
+        );
+        if (unameSnap.exists) throw new Error("Username already registered");
+      } catch (err) {
+        if (!isDbError(err)) throw err;
+      }
 
       let cred;
       try {
@@ -557,12 +736,17 @@
         await claimUsername(username, cred.user.uid, email);
         await fbDb.collection("users").doc(cred.user.uid).set(profile);
       } catch (err) {
-        try {
-          await cred.user.delete();
-        } catch (_) {}
-        throw err;
+        if (err && err.message === "Username already taken") {
+          try {
+            await cred.user.delete();
+          } catch (_) {}
+          throw err;
+        }
+        // Firestore unreachable — account exists in Auth; keep a local copy
+        console.warn("Cloud profile save failed:", err && err.message);
       }
       const user = { id: cred.user.uid, ...profile };
+      cacheProfile(user);
       const st = await loadCloudState(user.id);
       return {
         user: publicUser(user),
@@ -577,7 +761,17 @@
       const password = String(body.password || "");
       let email = login;
       if (!login.includes("@")) {
-        const snap = await fbDb.collection("usernames").doc(login).get();
+        let snap = null;
+        try {
+          snap = await withTimeout(
+            fbDb.collection("usernames").doc(login).get(),
+            6000
+          );
+        } catch (err) {
+          throw new Error(
+            "Couldn't look up that username — try logging in with your email instead"
+          );
+        }
         if (!snap.exists) throw new Error("Wrong username/email or password");
         email = snap.data().email;
       }
@@ -586,15 +780,12 @@
       } catch (err) {
         throw new Error(friendlyAuthError(err));
       }
-      const st = await loadCloudState(fbAuth.currentUser.uid);
+      const fbUser = fbAuth.currentUser;
+      const st = await loadCloudState(fbUser.uid);
+      const user = await resolveProfile(fbUser, st.user);
       return {
-        user: publicUser(st.user),
-        bootstrap: seedBootstrap(
-          st.user,
-          st.games,
-          st.bookings,
-          st.reservations
-        ),
+        user: publicUser(user),
+        bootstrap: seedBootstrap(user, st.games, st.bookings, st.reservations),
       };
     }
 
@@ -604,18 +795,23 @@
       try {
         result = await fbAuth.signInWithPopup(provider);
       } catch (err) {
+        if (
+          err &&
+          (err.code === "auth/popup-blocked" ||
+            err.code === "auth/operation-not-supported-in-this-environment")
+        ) {
+          // Fall back to full-page redirect; boot() picks the session up on return
+          await fbAuth.signInWithRedirect(provider);
+          return new Promise(() => {});
+        }
         throw new Error(friendlyAuthError(err));
       }
-      const user = await upsertGoogleProfile(result.user);
-      const st = await loadCloudState(user.id);
+      const fbUser = result.user;
+      const st = await loadCloudState(fbUser.uid);
+      const user = await resolveProfile(fbUser, st.user);
       return {
         user: publicUser(user),
-        bootstrap: seedBootstrap(
-          user,
-          st.games,
-          st.bookings,
-          st.reservations
-        ),
+        bootstrap: seedBootstrap(user, st.games, st.bookings, st.reservations),
       };
     }
 
@@ -627,17 +823,30 @@
         lat: +body.lat,
         lng: +body.lng,
       };
-      await fbDb.collection("users").doc(fbUser.uid).update({ location });
-      const snap = await fbDb.collection("users").doc(fbUser.uid).get();
-      return { user: publicUser({ id: fbUser.uid, ...snap.data() }) };
+      const cached = cachedProfile(fbUser.uid);
+      if (cached) cacheProfile({ ...cached, location });
+      try {
+        await withTimeout(
+          fbDb.collection("users").doc(fbUser.uid).set({ location }, { merge: true }),
+          7000
+        );
+        const snap = await withTimeout(
+          fbDb.collection("users").doc(fbUser.uid).get(),
+          7000
+        );
+        if (snap.exists)
+          return { user: publicUser({ id: fbUser.uid, ...snap.data() }) };
+      } catch (err) {
+        console.warn("Cloud location save failed:", err && err.message);
+      }
+      const user = cachedProfile(fbUser.uid) || derivedProfile(fbUser);
+      return { user: publicUser({ ...user, location }) };
     }
 
     if (path === "/api/book" && method === "POST") {
       const fbUser = fbAuth.currentUser;
       if (!fbUser) throw new Error("Please log in first");
-      const userSnap = await fbDb.collection("users").doc(fbUser.uid).get();
-      if (!userSnap.exists) throw new Error("Please log in first");
-      const user = { id: fbUser.uid, ...userSnap.data() };
+      const user = await resolveProfile(fbUser, null);
       const fac = FACILITIES.find((f) => f.id === body.facId);
       if (!fac) throw new Error("Unknown facility");
       const key = `${fac.id}|${body.date}|${body.start}`;
@@ -714,9 +923,7 @@
     if (path === "/api/join" && method === "POST") {
       const fbUser = fbAuth.currentUser;
       if (!fbUser) throw new Error("Please log in first");
-      const userSnap = await fbDb.collection("users").doc(fbUser.uid).get();
-      if (!userSnap.exists) throw new Error("Please log in first");
-      const user = { id: fbUser.uid, ...userSnap.data() };
+      const user = await resolveProfile(fbUser, null);
       const gameRef = fbDb.collection("games").doc(body.gameId);
       let game;
       await fbDb.runTransaction(async (tx) => {
@@ -790,8 +997,8 @@
           );
         });
       } else if (booking.kind === "game" && booking.gameId) {
-        const userSnap = await fbDb.collection("users").doc(fbUser.uid).get();
-        const username = userSnap.data().username;
+        const profile = await resolveProfile(fbUser, null);
+        const username = profile.username;
         const gameRef = fbDb.collection("games").doc(booking.gameId);
         await fbDb.runTransaction(async (tx) => {
           const g = await tx.get(gameRef);
